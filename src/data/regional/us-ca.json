@@ -1,0 +1,315 @@
+{
+  "region": {
+    "code": "US_CA",
+    "name": "California, USA",
+    "country": "US",
+    "currency": "USD",
+    "taxSystem": {
+      "salesTax": 7.25
+    },
+    "regulations": {
+      "coolingOffPeriod": 0,
+      "inspectionPeriod": 7,
+      "financingPeriod": 21
+    }
+  },
+  "legalRequirements": [
+    {
+      "id": "real-estate-attorney",
+      "title": "Real Estate Attorney (Optional)",
+      "description": "Legal representation - optional in California but recommended",
+      "mandatory": false,
+      "category": "documentation",
+      "timeframe": "Throughout process",
+      "estimatedCost": {
+        "min": 1500,
+        "max": 3500,
+        "currency": "USD"
+      }
+    },
+    {
+      "id": "title-insurance",
+      "title": "Title Insurance",
+      "description": "Protection against title defects and ownership issues",
+      "mandatory": true,
+      "category": "insurance",
+      "timeframe": "At closing",
+      "estimatedCost": {
+        "min": 1000,
+        "max": 3000,
+        "currency": "USD"
+      }
+    },
+    {
+      "id": "natural-hazard-disclosure",
+      "title": "Natural Hazard Disclosure",
+      "description": "Disclosure of earthquake, flood, fire, and other natural hazard zones",
+      "mandatory": true,
+      "category": "disclosure",
+      "timeframe": "With offer"
+    },
+    {
+      "id": "transfer-disclosure-statement",
+      "title": "Transfer Disclosure Statement (TDS)",
+      "description": "Seller must disclose known material facts about the property",
+      "mandatory": true,
+      "category": "disclosure",
+      "timeframe": "Within disclosure period"
+    }
+  ],
+  "costs": [
+    {
+      "id": "title-insurance",
+      "title": "Title Insurance",
+      "description": "One-time premium for title insurance policy",
+      "category": "insurance",
+      "amount": {
+        "min": 1000,
+        "max": 3000,
+        "currency": "USD"
+      },
+      "frequency": "one-time",
+      "when": "at-closing"
+    },
+    {
+      "id": "escrow-fees",
+      "title": "Escrow Fees",
+      "description": "Fees for escrow company handling the transaction",
+      "category": "closing",
+      "amount": {
+        "min": 800,
+        "max": 2000,
+        "currency": "USD"
+      },
+      "frequency": "one-time",
+      "when": "at-closing"
+    },
+    {
+      "id": "home-inspection",
+      "title": "Home Inspection",
+      "description": "Professional inspection of property condition",
+      "category": "inspection",
+      "amount": {
+        "min": 400,
+        "max": 800,
+        "currency": "USD"
+      },
+      "frequency": "one-time",
+      "when": "during-inspection"
+    },
+    {
+      "id": "appraisal",
+      "title": "Home Appraisal",
+      "description": "Professional appraisal required by lender",
+      "category": "financing",
+      "amount": {
+        "min": 500,
+        "max": 800,
+        "currency": "USD"
+      },
+      "frequency": "one-time",
+      "when": "during-inspection"
+    },
+    {
+      "id": "homeowners-insurance",
+      "title": "Homeowners Insurance",
+      "description": "Required property insurance coverage",
+      "category": "insurance",
+      "amount": {
+        "min": 1200,
+        "max": 5000,
+        "currency": "USD"
+      },
+      "frequency": "annual",
+      "when": "before-offer"
+    },
+    {
+      "id": "property-tax",
+      "title": "Property Tax",
+      "description": "Annual property tax based on assessed value",
+      "category": "tax",
+      "amount": {
+        "percentage": 1.0,
+        "currency": "USD"
+      },
+      "frequency": "annual",
+      "when": "post-closing"
+    },
+    {
+      "id": "hoa-fees",
+      "title": "HOA Fees",
+      "description": "Homeowners association fees for condos and some communities",
+      "category": "closing",
+      "amount": {
+        "min": 100,
+        "max": 700,
+        "currency": "USD"
+      },
+      "frequency": "monthly",
+      "when": "post-closing"
+    }
+  ],
+  "seasonalConsiderations": [
+    {
+      "season": "spring",
+      "title": "Peak Buying Season",
+      "description": "Highest inventory but most competition. Ideal weather statewide.",
+      "impact": "neutral",
+      "category": "market"
+    },
+    {
+      "season": "summer",
+      "title": "Active Market",
+      "description": "Good inventory levels. Hot weather in inland areas may affect viewings.",
+      "impact": "positive",
+      "category": "market"
+    },
+    {
+      "season": "fall",
+      "title": "Best Weather Period",
+      "description": "Excellent weather conditions. Motivated sellers before holidays.",
+      "impact": "positive",
+      "category": "pricing"
+    },
+    {
+      "season": "winter",
+      "title": "Holiday Season Slowdown",
+      "description": "Lower inventory but less competition. Rainy season in Northern California.",
+      "impact": "negative",
+      "category": "market"
+    }
+  ],
+  "steps": [
+    {
+      "id": "assess-finances",
+      "title": "Assess Your Financial Situation",
+      "description": "Evaluate your income, debts, and savings to determine your home buying budget",
+      "category": "planning",
+      "estimatedDuration": "2-3 days",
+      "prerequisites": [],
+      "resources": [
+        {
+          "type": "calculator",
+          "title": "CalHFA Mortgage Calculator",
+          "url": "https://www.calhfa.ca.gov/",
+          "description": "Calculate mortgage payments and affordability"
+        },
+        {
+          "type": "document",
+          "title": "California Home Buying Guide",
+          "description": "Comprehensive guide to buying a home in California"
+        }
+      ],
+      "legalRequirements": [],
+      "costs": [],
+      "tips": [
+        "California home prices are among the highest in the US",
+        "Consider earthquake insurance in high-risk areas",
+        "Factor in Mello-Roos taxes for newer developments"
+      ]
+    },
+    {
+      "id": "understand-disclosures",
+      "title": "Understanding California Disclosures",
+      "description": "Learn about mandatory seller disclosures in California",
+      "category": "planning",
+      "estimatedDuration": "1-2 days",
+      "prerequisites": [],
+      "resources": [
+        {
+          "type": "document",
+          "title": "California Disclosure Requirements",
+          "description": "Guide to mandatory disclosures in California real estate"
+        }
+      ],
+      "legalRequirements": ["natural-hazard-disclosure", "transfer-disclosure-statement"],
+      "costs": [],
+      "tips": [
+        "Review all disclosures carefully within the disclosure period",
+        "Ask questions about any unclear information",
+        "Consider hiring professionals for specialized inspections"
+      ]
+    },
+    {
+      "id": "earthquake-considerations",
+      "title": "Earthquake Risk Assessment",
+      "description": "Evaluate earthquake risks and insurance needs",
+      "category": "planning",
+      "estimatedDuration": "1 day",
+      "prerequisites": [],
+      "resources": [
+        {
+          "type": "website",
+          "title": "California Earthquake Authority",
+          "url": "https://www.earthquakeauthority.com/",
+          "description": "Information about earthquake insurance and risk"
+        }
+      ],
+      "legalRequirements": [],
+      "costs": [],
+      "tips": [
+        "Standard homeowners insurance doesn't cover earthquake damage",
+        "Consider earthquake retrofitting for older homes",
+        "Understand liquefaction and landslide risks in your area"
+      ]
+    }
+  ],
+  "resources": [
+    {
+      "type": "website",
+      "title": "California Department of Real Estate",
+      "url": "https://www.dre.ca.gov/",
+      "description": "State regulatory agency for real estate professionals"
+    },
+    {
+      "type": "website",
+      "title": "California Association of Realtors",
+      "url": "https://www.car.org/",
+      "description": "Professional association for California real estate agents"
+    },
+    {
+      "type": "website",
+      "title": "California Housing Finance Agency",
+      "url": "https://www.calhfa.ca.gov/",
+      "description": "State housing finance agency with first-time buyer programs"
+    }
+  ],
+  "governmentPrograms": [
+    {
+      "id": "calhfa-conventional-loan",
+      "title": "CalHFA Conventional Loan Program",
+      "description": "Down payment assistance for first-time home buyers",
+      "eligibility": [
+        "First-time home buyer",
+        "Meet income and purchase price limits",
+        "Complete homebuyer education course"
+      ],
+      "benefits": [
+        "Down payment assistance up to 3.5%",
+        "Closing cost assistance up to 2%",
+        "Competitive interest rates"
+      ],
+      "applicationProcess": "Apply through CalHFA approved lenders",
+      "website": "https://www.calhfa.ca.gov/homebuyer/programs/conventional.htm",
+      "category": "first-time-buyer"
+    },
+    {
+      "id": "mortgage-credit-certificate",
+      "title": "Mortgage Credit Certificate (MCC)",
+      "description": "Federal tax credit for mortgage interest payments",
+      "eligibility": [
+        "First-time home buyer",
+        "Meet income limits",
+        "Use CalHFA financing"
+      ],
+      "benefits": [
+        "Up to 20% tax credit on mortgage interest",
+        "Reduces annual federal income tax",
+        "Lifetime benefit"
+      ],
+      "applicationProcess": "Apply through CalHFA at time of loan application",
+      "website": "https://www.calhfa.ca.gov/homebuyer/programs/mcc.htm",
+      "category": "tax-credit"
+    }
+  ]
+}

@@ -1,0 +1,184 @@
+'use client';
+
+import React, { useState } from 'react';
+import Link from 'next/link';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
+import { EyeIcon, EyeSlashIcon } from '@heroicons/react/24/outline';
+import { useAuth } from '@/contexts/AuthContext';
+
+// Form validation schema
+const loginSchema = z.object({
+  email: z
+    .string()
+    .min(1, 'Email is required')
+    .email('Please enter a valid email address'),
+  password: z.string().min(1, 'Password is required'),
+  rememberMe: z.boolean().optional(),
+});
+
+type LoginFormData = z.infer<typeof loginSchema>;
+
+export default function LoginPage() {
+  const [showPassword, setShowPassword] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [apiError, setApiError] = useState<string | null>(null);
+
+  const { signIn } = useAuth();
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const redirectTo = searchParams.get('redirectTo') || '/dashboard';
+
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<LoginFormData>({
+    resolver: zodResolver(loginSchema),
+  });
+
+  const onSubmit = async (data: LoginFormData) => {
+    setIsSubmitting(true);
+    setApiError(null);
+
+    try {
+      const result = await signIn(data.email, data.password);
+
+      if (result.success) {
+        // Redirect to the intended page or dashboard
+        router.push(result.nextStep || redirectTo);
+      } else {
+        setApiError(result.error || 'Login failed');
+      }
+    } catch (error) {
+      console.error('Login error:', error);
+      setApiError('An unexpected error occurred. Please try again.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  return (
+    <div className="duolingo-container">
+      <div className="duolingo-card">
+        {/* Header */}
+        <div className="text-center mb-8">
+          <h1 className="duolingo-title">Welcome back</h1>
+          <p className="duolingo-subtitle">
+            Continue your home buying journey
+          </p>
+        </div>
+
+        {/* Error Message */}
+        {apiError && (
+          <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
+            <p className="duolingo-error">{apiError}</p>
+          </div>
+        )}
+
+        {/* Login Form */}
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+          {/* Email Field */}
+          <div className="duolingo-form-group">
+            <label htmlFor="email" className="duolingo-label">
+              Email address
+            </label>
+            <input
+              {...register('email')}
+              type="email"
+              id="email"
+              className={`duolingo-input ${
+                errors.email ? 'error' : ''
+              }`}
+              placeholder="Enter your email"
+              autoComplete="email"
+            />
+            {errors.email && (
+              <p className="duolingo-error">{errors.email.message}</p>
+            )}
+          </div>
+
+          {/* Password Field */}
+          <div className="duolingo-form-group">
+            <div className="flex items-center justify-between">
+              <label htmlFor="password" className="duolingo-label mb-0">
+                Password
+              </label>
+              <Link
+                href="/forgot-password"
+                className="text-sm duolingo-link"
+              >
+                Forgot password?
+              </Link>
+            </div>
+            <div className="relative mt-2">
+              <input
+                {...register('password')}
+                type={showPassword ? 'text' : 'password'}
+                id="password"
+                className={`duolingo-input pr-12 ${
+                  errors.password ? 'error' : ''
+                }`}
+                placeholder="Enter your password"
+                autoComplete="current-password"
+              />
+              <button
+                type="button"
+                className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600"
+                onClick={() => setShowPassword(!showPassword)}
+              >
+                {showPassword ? (
+                  <EyeSlashIcon className="h-5 w-5" />
+                ) : (
+                  <EyeIcon className="h-5 w-5" />
+                )}
+              </button>
+            </div>
+            {errors.password && (
+              <p className="duolingo-error">{errors.password.message}</p>
+            )}
+          </div>
+
+          {/* Remember Me */}
+          <div className="flex items-center">
+            <input
+              {...register('rememberMe')}
+              type="checkbox"
+              id="rememberMe"
+              className="duolingo-checkbox"
+            />
+            <label htmlFor="rememberMe" className="ml-3 text-sm text-gray-600">
+              Remember me for 30 days
+            </label>
+          </div>
+
+          {/* Submit Button */}
+          <button
+            type="submit"
+            disabled={isSubmitting}
+            className="duolingo-button"
+          >
+            {isSubmitting ? 'Signing in...' : 'Sign in'}
+          </button>
+        </form>
+
+        {/* Divider */}
+        <div className="duolingo-divider">
+          <span>New to BuyRight?</span>
+        </div>
+
+        {/* Sign Up Link */}
+        <div className="text-center">
+          <Link
+            href="/register"
+            className="duolingo-link text-sm"
+          >
+            Create an account
+          </Link>
+        </div>
+      </div>
+    </div>
+  );
+}

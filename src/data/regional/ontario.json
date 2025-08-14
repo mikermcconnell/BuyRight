@@ -1,0 +1,457 @@
+{
+  "region": {
+    "code": "ON",
+    "name": "Ontario",
+    "country": "CA",
+    "currency": "CAD",
+    "taxSystem": {
+      "landTransferTax": 2.0,
+      "hst": 13.0
+    },
+    "regulations": {
+      "coolingOffPeriod": 0,
+      "inspectionPeriod": 5,
+      "financingPeriod": 30
+    }
+  },
+  "legalRequirements": [
+    {
+      "id": "real-estate-lawyer",
+      "title": "Real Estate Lawyer",
+      "description": "Legal representation required for all real estate transactions in Ontario",
+      "mandatory": true,
+      "category": "documentation",
+      "timeframe": "Before closing",
+      "estimatedCost": {
+        "min": 1200,
+        "max": 2500,
+        "currency": "CAD"
+      }
+    },
+    {
+      "id": "title-insurance",
+      "title": "Title Insurance",
+      "description": "Protection against title defects and survey issues",
+      "mandatory": false,
+      "category": "insurance",
+      "timeframe": "At closing",
+      "estimatedCost": {
+        "min": 300,
+        "max": 600,
+        "currency": "CAD"
+      }
+    },
+    {
+      "id": "home-inspection",
+      "title": "Professional Home Inspection",
+      "description": "Detailed inspection of property condition and systems",
+      "mandatory": false,
+      "category": "inspection",
+      "timeframe": "Within inspection period",
+      "estimatedCost": {
+        "min": 400,
+        "max": 800,
+        "currency": "CAD"
+      }
+    },
+    {
+      "id": "property-disclosure",
+      "title": "Seller Property Information Statement (SPIS)",
+      "description": "Seller must provide disclosure of known property issues",
+      "mandatory": true,
+      "category": "disclosure",
+      "timeframe": "With offer"
+    }
+  ],
+  "costs": [
+    {
+      "id": "land-transfer-tax-provincial",
+      "title": "Provincial Land Transfer Tax",
+      "description": "Tax paid to Ontario government on property transfer",
+      "category": "tax",
+      "amount": {
+        "percentage": 2.0,
+        "currency": "CAD"
+      },
+      "frequency": "one-time",
+      "when": "at-closing"
+    },
+    {
+      "id": "land-transfer-tax-toronto",
+      "title": "Toronto Municipal Land Transfer Tax",
+      "description": "Additional tax for properties within Toronto",
+      "category": "tax",
+      "amount": {
+        "percentage": 2.0,
+        "currency": "CAD"
+      },
+      "frequency": "one-time",
+      "when": "at-closing"
+    },
+    {
+      "id": "legal-fees",
+      "title": "Legal Fees",
+      "description": "Lawyer fees for handling the transaction",
+      "category": "legal",
+      "amount": {
+        "min": 1200,
+        "max": 2500,
+        "currency": "CAD"
+      },
+      "frequency": "one-time",
+      "when": "at-closing"
+    },
+    {
+      "id": "home-insurance",
+      "title": "Home Insurance",
+      "description": "Required property insurance coverage",
+      "category": "insurance",
+      "amount": {
+        "min": 1200,
+        "max": 3000,
+        "currency": "CAD"
+      },
+      "frequency": "annual",
+      "when": "before-offer"
+    },
+    {
+      "id": "property-tax",
+      "title": "Property Tax",
+      "description": "Annual municipal property tax",
+      "category": "tax",
+      "amount": {
+        "percentage": 1.0,
+        "currency": "CAD"
+      },
+      "frequency": "annual",
+      "when": "post-closing"
+    }
+  ],
+  "seasonalConsiderations": [
+    {
+      "season": "spring",
+      "title": "Peak Buying Season",
+      "description": "Highest inventory but most competition. Best weather for inspections and moving.",
+      "impact": "neutral",
+      "category": "market"
+    },
+    {
+      "season": "summer",
+      "title": "Active Market Period",
+      "description": "Good inventory levels and weather conditions. Ideal for family moves.",
+      "impact": "positive",
+      "category": "market"
+    },
+    {
+      "season": "fall",
+      "title": "Motivated Sellers",
+      "description": "Sellers motivated to close before winter. Good negotiating opportunities.",
+      "impact": "positive",
+      "category": "pricing"
+    },
+    {
+      "season": "winter",
+      "title": "Reduced Activity",
+      "description": "Lower inventory but less competition. Challenging for inspections and moving.",
+      "impact": "negative",
+      "category": "market"
+    }
+  ],
+  "steps": [
+    {
+      "id": "assess-finances",
+      "title": "Assess Your Financial Situation",
+      "description": "Evaluate your income, debts, and savings to determine your home buying budget",
+      "category": "planning",
+      "estimatedDuration": "2-3 days",
+      "prerequisites": [],
+      "resources": [
+        {
+          "type": "calculator",
+          "title": "CMHC Mortgage Calculator",
+          "url": "https://www.cmhc-schl.gc.ca/en/consumers/home-buying/calculators",
+          "description": "Calculate your maximum mortgage amount and monthly payments"
+        },
+        {
+          "type": "document",
+          "title": "Financial Readiness Checklist",
+          "description": "Complete checklist to assess your financial readiness for home ownership"
+        }
+      ],
+      "legalRequirements": [],
+      "costs": [],
+      "tips": [
+        "Aim for a down payment of at least 10-20% to avoid CMHC insurance",
+        "Factor in closing costs of 2-4% of the home price",
+        "Consider pre-approval to understand your budget before house hunting"
+      ]
+    },
+    {
+      "id": "get-preapproved",
+      "title": "Get Mortgage Pre-approval",
+      "description": "Obtain pre-approval from a lender to determine your buying power",
+      "category": "financing",
+      "estimatedDuration": "1-2 weeks",
+      "prerequisites": ["assess-finances"],
+      "resources": [
+        {
+          "type": "contact",
+          "title": "Mortgage Broker Network",
+          "description": "Connect with licensed mortgage brokers in Ontario"
+        },
+        {
+          "type": "document",
+          "title": "Pre-approval Document Checklist",
+          "description": "List of documents needed for mortgage pre-approval"
+        }
+      ],
+      "legalRequirements": [],
+      "costs": [],
+      "tips": [
+        "Shop around with multiple lenders for best rates",
+        "Get pre-approval letter in writing",
+        "Understand the difference between pre-qualification and pre-approval"
+      ]
+    },
+    {
+      "id": "find-real-estate-agent",
+      "title": "Choose a Real Estate Agent",
+      "description": "Select a licensed real estate agent to represent you in the buying process",
+      "category": "searching",
+      "estimatedDuration": "1 week",
+      "prerequisites": [],
+      "resources": [
+        {
+          "type": "website",
+          "title": "RECO Agent Search",
+          "url": "https://www.reco.on.ca/registration-directory/",
+          "description": "Find licensed real estate professionals in Ontario"
+        }
+      ],
+      "legalRequirements": [],
+      "costs": [],
+      "tips": [
+        "Interview multiple agents before choosing",
+        "Check their recent sales history in your target area",
+        "Ensure they understand your budget and preferences"
+      ]
+    },
+    {
+      "id": "house-hunting",
+      "title": "Start House Hunting",
+      "description": "Begin searching for properties that meet your criteria",
+      "category": "searching",
+      "estimatedDuration": "2-12 weeks",
+      "prerequisites": ["get-preapproved", "find-real-estate-agent"],
+      "resources": [
+        {
+          "type": "website",
+          "title": "MLS Listings",
+          "url": "https://www.realtor.ca/",
+          "description": "Search active property listings in Ontario"
+        }
+      ],
+      "legalRequirements": [],
+      "costs": [],
+      "tips": [
+        "Make a list of must-haves vs. nice-to-haves",
+        "Consider future resale value",
+        "Visit neighborhoods at different times of day"
+      ]
+    },
+    {
+      "id": "make-offer",
+      "title": "Make an Offer",
+      "description": "Submit a formal offer to purchase with conditions",
+      "category": "searching",
+      "estimatedDuration": "1-3 days",
+      "prerequisites": ["house-hunting"],
+      "resources": [
+        {
+          "type": "document",
+          "title": "Agreement of Purchase and Sale (APS) Guide",
+          "description": "Understanding the standard Ontario purchase agreement"
+        }
+      ],
+      "legalRequirements": ["property-disclosure"],
+      "costs": [],
+      "tips": [
+        "Include financing and inspection conditions",
+        "Research comparable sales for pricing guidance",
+        "Be prepared for counteroffers"
+      ]
+    },
+    {
+      "id": "home-inspection",
+      "title": "Conduct Home Inspection",
+      "description": "Have the property professionally inspected for defects",
+      "category": "inspection",
+      "estimatedDuration": "3-5 days",
+      "prerequisites": ["make-offer"],
+      "resources": [
+        {
+          "type": "contact",
+          "title": "Certified Home Inspectors",
+          "description": "Find qualified home inspectors in your area"
+        }
+      ],
+      "legalRequirements": ["home-inspection"],
+      "costs": ["home-inspection"],
+      "tips": [
+        "Attend the inspection if possible",
+        "Review the report carefully before waiving conditions",
+        "Use findings to negotiate repairs or price adjustments"
+      ]
+    },
+    {
+      "id": "finalize-financing",
+      "title": "Finalize Mortgage",
+      "description": "Complete mortgage application and secure final approval",
+      "category": "financing",
+      "estimatedDuration": "2-4 weeks",
+      "prerequisites": ["make-offer"],
+      "resources": [
+        {
+          "type": "document",
+          "title": "Mortgage Application Checklist",
+          "description": "Complete list of documents required for final approval"
+        }
+      ],
+      "legalRequirements": [],
+      "costs": [],
+      "tips": [
+        "Avoid making major purchases before closing",
+        "Provide all requested documentation promptly",
+        "Get mortgage commitment in writing"
+      ]
+    },
+    {
+      "id": "hire-lawyer",
+      "title": "Hire Real Estate Lawyer",
+      "description": "Engage a lawyer to handle legal aspects of the transaction",
+      "category": "closing",
+      "estimatedDuration": "1 week",
+      "prerequisites": ["make-offer"],
+      "resources": [
+        {
+          "type": "contact",
+          "title": "Law Society of Ontario Directory",
+          "description": "Find licensed real estate lawyers in Ontario"
+        }
+      ],
+      "legalRequirements": ["real-estate-lawyer"],
+      "costs": ["legal-fees"],
+      "tips": [
+        "Hire a lawyer experienced in real estate transactions",
+        "Get fee estimate upfront",
+        "Ensure they can accommodate your closing timeline"
+      ]
+    },
+    {
+      "id": "final-walkthrough",
+      "title": "Final Walkthrough",
+      "description": "Inspect the property one final time before closing",
+      "category": "closing",
+      "estimatedDuration": "1 day",
+      "prerequisites": ["hire-lawyer"],
+      "resources": [],
+      "legalRequirements": [],
+      "costs": [],
+      "tips": [
+        "Check that agreed-upon repairs were completed",
+        "Verify all included fixtures and appliances are present",
+        "Test major systems (heating, plumbing, electrical)"
+      ]
+    },
+    {
+      "id": "closing-day",
+      "title": "Complete the Purchase",
+      "description": "Sign final documents and receive keys to your new home",
+      "category": "closing",
+      "estimatedDuration": "1 day",
+      "prerequisites": ["final-walkthrough", "finalize-financing"],
+      "resources": [],
+      "legalRequirements": [],
+      "costs": ["land-transfer-tax-provincial", "legal-fees"],
+      "tips": [
+        "Bring certified funds for closing costs",
+        "Review all documents before signing",
+        "Get copies of all important documents"
+      ]
+    }
+  ],
+  "resources": [
+    {
+      "type": "website",
+      "title": "Ontario Real Estate Association",
+      "url": "https://orea.com/",
+      "description": "Professional association for Ontario real estate professionals"
+    },
+    {
+      "type": "website",
+      "title": "Real Estate Council of Ontario (RECO)",
+      "url": "https://www.reco.on.ca/",
+      "description": "Regulatory body for Ontario real estate professionals"
+    },
+    {
+      "type": "website",
+      "title": "Canada Mortgage and Housing Corporation",
+      "url": "https://www.cmhc-schl.gc.ca/",
+      "description": "National housing agency with mortgage insurance and resources"
+    }
+  ],
+  "governmentPrograms": [
+    {
+      "id": "first-time-home-buyer-incentive",
+      "title": "First-Time Home Buyer Incentive",
+      "description": "Shared equity mortgage from the Government of Canada",
+      "eligibility": [
+        "First-time home buyer",
+        "Household income under $120,000",
+        "Mortgage plus incentive cannot exceed 4x household income"
+      ],
+      "benefits": [
+        "5% shared equity for existing homes",
+        "10% shared equity for new homes",
+        "Reduces monthly mortgage payments"
+      ],
+      "applicationProcess": "Apply through participating lenders",
+      "website": "https://www.placetocallhome.ca/fthbi/first-time-homebuyer-incentive",
+      "category": "first-time-buyer"
+    },
+    {
+      "id": "hst-new-housing-rebate",
+      "title": "HST New Housing Rebate",
+      "description": "Rebate on HST paid for new or substantially renovated homes",
+      "eligibility": [
+        "Purchasing new or substantially renovated home",
+        "Home is primary residence",
+        "Purchase price under $450,000"
+      ],
+      "benefits": [
+        "Up to $24,000 rebate on HST paid",
+        "Reduces closing costs"
+      ],
+      "applicationProcess": "Apply to Canada Revenue Agency within 2 years",
+      "website": "https://www.canada.ca/en/revenue-agency/services/tax/businesses/topics/gst-hst-businesses/charge-collect-home-construction/new-housing-rebate.html",
+      "category": "rebate"
+    },
+    {
+      "id": "home-buyers-plan",
+      "title": "Home Buyers' Plan (HBP)",
+      "description": "Withdraw up to $35,000 from RRSP for home purchase",
+      "eligibility": [
+        "First-time home buyer (or haven't owned home in past 4 years)",
+        "Have qualifying RRSP funds"
+      ],
+      "benefits": [
+        "Up to $35,000 per person ($70,000 for couples)",
+        "No immediate tax consequences",
+        "15 years to repay"
+      ],
+      "applicationProcess": "Apply through financial institution",
+      "website": "https://www.canada.ca/en/revenue-agency/services/tax/individuals/topics/rrsps-related-plans/what-home-buyers-plan.html",
+      "category": "first-time-buyer"
+    }
+  ]
+}

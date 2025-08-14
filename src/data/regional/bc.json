@@ -1,0 +1,279 @@
+{
+  "region": {
+    "code": "BC",
+    "name": "British Columbia",
+    "country": "CA",
+    "currency": "CAD",
+    "taxSystem": {
+      "propertyTransferTax": 1.0,
+      "gst": 5.0,
+      "pst": 7.0
+    },
+    "regulations": {
+      "coolingOffPeriod": 3,
+      "inspectionPeriod": 7,
+      "financingPeriod": 21
+    }
+  },
+  "legalRequirements": [
+    {
+      "id": "notary-or-lawyer",
+      "title": "Notary Public or Lawyer",
+      "description": "Legal representation by notary public or lawyer for property transfers",
+      "mandatory": true,
+      "category": "documentation",
+      "timeframe": "Before closing",
+      "estimatedCost": {
+        "min": 800,
+        "max": 2000,
+        "currency": "CAD"
+      }
+    },
+    {
+      "id": "property-disclosure-statement",
+      "title": "Property Disclosure Statement (PDS)",
+      "description": "Mandatory disclosure of property condition by seller",
+      "mandatory": true,
+      "category": "disclosure",
+      "timeframe": "With offer"
+    },
+    {
+      "id": "home-inspection",
+      "title": "Professional Home Inspection",
+      "description": "Detailed inspection of property condition and systems",
+      "mandatory": false,
+      "category": "inspection",
+      "timeframe": "Within inspection period",
+      "estimatedCost": {
+        "min": 450,
+        "max": 900,
+        "currency": "CAD"
+      }
+    },
+    {
+      "id": "foreign-buyer-tax",
+      "title": "Foreign Buyer Tax Declaration",
+      "description": "Declaration required for property transfer tax purposes",
+      "mandatory": true,
+      "category": "tax",
+      "timeframe": "At closing"
+    }
+  ],
+  "costs": [
+    {
+      "id": "property-transfer-tax",
+      "title": "Property Transfer Tax",
+      "description": "Tax paid to BC government on property transfer",
+      "category": "tax",
+      "amount": {
+        "percentage": 1.0,
+        "currency": "CAD"
+      },
+      "frequency": "one-time",
+      "when": "at-closing"
+    },
+    {
+      "id": "foreign-buyer-tax",
+      "title": "Foreign Buyer Tax",
+      "description": "Additional 20% tax for foreign buyers in Metro Vancouver",
+      "category": "tax",
+      "amount": {
+        "percentage": 20.0,
+        "currency": "CAD"
+      },
+      "frequency": "one-time",
+      "when": "at-closing"
+    },
+    {
+      "id": "legal-fees",
+      "title": "Legal/Notary Fees",
+      "description": "Lawyer or notary fees for handling the transaction",
+      "category": "legal",
+      "amount": {
+        "min": 800,
+        "max": 2000,
+        "currency": "CAD"
+      },
+      "frequency": "one-time",
+      "when": "at-closing"
+    },
+    {
+      "id": "home-insurance",
+      "title": "Home Insurance",
+      "description": "Required property insurance coverage",
+      "category": "insurance",
+      "amount": {
+        "min": 1500,
+        "max": 4000,
+        "currency": "CAD"
+      },
+      "frequency": "annual",
+      "when": "before-offer"
+    },
+    {
+      "id": "property-tax",
+      "title": "Property Tax",
+      "description": "Annual municipal property tax",
+      "category": "tax",
+      "amount": {
+        "percentage": 0.7,
+        "currency": "CAD"
+      },
+      "frequency": "annual",
+      "when": "post-closing"
+    },
+    {
+      "id": "strata-fees",
+      "title": "Strata Fees",
+      "description": "Monthly fees for condominiums and townhouses",
+      "category": "closing",
+      "amount": {
+        "min": 200,
+        "max": 800,
+        "currency": "CAD"
+      },
+      "frequency": "monthly",
+      "when": "post-closing"
+    }
+  ],
+  "seasonalConsiderations": [
+    {
+      "season": "spring",
+      "title": "Peak Market Season",
+      "description": "High inventory and competition. Excellent weather for viewings and moving.",
+      "impact": "neutral",
+      "category": "market"
+    },
+    {
+      "season": "summer",
+      "title": "Active Summer Market",
+      "description": "Good weather conditions and family-friendly moving time.",
+      "impact": "positive",
+      "category": "market"
+    },
+    {
+      "season": "fall",
+      "title": "Shoulder Season Opportunities",
+      "description": "Motivated sellers before winter. Less competition than spring/summer.",
+      "impact": "positive",
+      "category": "pricing"
+    },
+    {
+      "season": "winter",
+      "title": "Rainy Season Challenges",
+      "description": "Lower inventory but potential deals. Challenging weather for inspections.",
+      "impact": "negative",
+      "category": "market"
+    }
+  ],
+  "steps": [
+    {
+      "id": "assess-finances",
+      "title": "Assess Your Financial Situation",
+      "description": "Evaluate your income, debts, and savings to determine your home buying budget",
+      "category": "planning",
+      "estimatedDuration": "2-3 days",
+      "prerequisites": [],
+      "resources": [
+        {
+          "type": "calculator",
+          "title": "CMHC Mortgage Calculator",
+          "url": "https://www.cmhc-schl.gc.ca/en/consumers/home-buying/calculators",
+          "description": "Calculate your maximum mortgage amount and monthly payments"
+        },
+        {
+          "type": "calculator",
+          "title": "BC Property Transfer Tax Calculator",
+          "url": "https://www2.gov.bc.ca/gov/content/taxes/property-taxes/property-transfer-tax/calculate",
+          "description": "Calculate property transfer tax for BC properties"
+        }
+      ],
+      "legalRequirements": [],
+      "costs": [],
+      "tips": [
+        "Consider BC's 3-day cooling off period in your timeline",
+        "Factor in property transfer tax and potential foreign buyer tax",
+        "Research strata fees for condos and townhouses"
+      ]
+    },
+    {
+      "id": "cooling-off-period",
+      "title": "Understanding Cooling-Off Period",
+      "description": "Learn about BC's mandatory 3-day cooling-off period for home purchases",
+      "category": "planning",
+      "estimatedDuration": "1 day",
+      "prerequisites": [],
+      "resources": [
+        {
+          "type": "website",
+          "title": "BC Cooling-Off Period Information",
+          "url": "https://www.bcfsa.ca/industry-resources/real-estate/cooling-off-period",
+          "description": "Official information about BC's cooling-off period"
+        }
+      ],
+      "legalRequirements": [],
+      "costs": [],
+      "tips": [
+        "Cooling-off period is 3 business days after acceptance",
+        "You can waive cooling-off period for a $250 fee",
+        "Use this time to secure financing and complete due diligence"
+      ]
+    }
+  ],
+  "resources": [
+    {
+      "type": "website",
+      "title": "BC Financial Services Authority",
+      "url": "https://www.bcfsa.ca/",
+      "description": "Regulatory authority for real estate professionals in BC"
+    },
+    {
+      "type": "website",
+      "title": "Real Estate Board of Greater Vancouver",
+      "url": "https://www.rebgv.org/",
+      "description": "Professional association for Vancouver area realtors"
+    },
+    {
+      "type": "website",
+      "title": "BC Assessment",
+      "url": "https://www.bcassessment.ca/",
+      "description": "Property assessment and valuation information"
+    }
+  ],
+  "governmentPrograms": [
+    {
+      "id": "bc-home-owner-mortgage-insurance",
+      "title": "BC Home Owner Mortgage and Equity Partnership",
+      "description": "Helps eligible British Columbians with down payment loans",
+      "eligibility": [
+        "BC resident for 12+ months",
+        "First-time home buyer",
+        "Household income under specified limits"
+      ],
+      "benefits": [
+        "Down payment loan up to 5% of purchase price",
+        "Interest-free and payment-free for 5 years"
+      ],
+      "applicationProcess": "Apply through participating lenders",
+      "website": "https://www.bchousing.org/housing-assistance/home-owner-mortgage-equity-partnership",
+      "category": "first-time-buyer"
+    },
+    {
+      "id": "property-tax-deferment",
+      "title": "Property Tax Deferment Program",
+      "description": "Defer property taxes for eligible homeowners",
+      "eligibility": [
+        "Age 55 or older",
+        "Own and occupy property as primary residence"
+      ],
+      "benefits": [
+        "Defer property taxes",
+        "Low interest rate",
+        "Improves cash flow"
+      ],
+      "applicationProcess": "Apply through BC government",
+      "website": "https://www2.gov.bc.ca/gov/content/taxes/property-taxes/annual-property-tax/defer-taxes",
+      "category": "tax-credit"
+    }
+  ]
+}

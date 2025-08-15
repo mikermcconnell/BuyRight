@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createSupabaseRouteHandlerClient, createSupabaseServerComponentClient } from '@/lib/supabase-server';
+import { isSupabaseAvailable } from '@/lib/supabase';
 
 // Auth utilities for server components and API routes
 
@@ -17,6 +18,18 @@ export interface AuthenticatedUser {
  */
 export async function getAuthenticatedUser(request?: NextRequest): Promise<AuthenticatedUser | null> {
   try {
+    // Check if Supabase is available
+    if (!isSupabaseAvailable()) {
+      console.warn('Supabase not available - returning demo user');
+      return {
+        id: 'demo-user',
+        email: 'demo@buyright.app',
+        email_verified: true,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      };
+    }
+
     const supabase = createSupabaseRouteHandlerClient();
     const { data: { user }, error } = await supabase.auth.getUser();
 
@@ -43,6 +56,18 @@ export async function getAuthenticatedUser(request?: NextRequest): Promise<Authe
  */
 export async function getServerAuthenticatedUser(): Promise<AuthenticatedUser | null> {
   try {
+    // Check if Supabase is available
+    if (!isSupabaseAvailable()) {
+      console.warn('Supabase not available - returning demo user for server component');
+      return {
+        id: 'demo-user',
+        email: 'demo@buyright.app',
+        email_verified: true,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      };
+    }
+
     const supabase = createSupabaseServerComponentClient();
     const { data: { user }, error } = await supabase.auth.getUser();
 
@@ -68,6 +93,18 @@ export async function getServerAuthenticatedUser(): Promise<AuthenticatedUser | 
  * Returns authentication error response if user is not authenticated
  */
 export async function requireAuth(request: NextRequest): Promise<{ user: AuthenticatedUser } | NextResponse> {
+  // If Supabase is not available, return demo user
+  if (!isSupabaseAvailable()) {
+    const demoUser: AuthenticatedUser = {
+      id: 'demo-user',
+      email: 'demo@buyright.app',
+      email_verified: true,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    };
+    return { user: demoUser };
+  }
+
   const user = await getAuthenticatedUser(request);
 
   if (!user) {

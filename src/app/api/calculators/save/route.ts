@@ -1,14 +1,22 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
+import { createSupabaseServiceClient, isSupabaseAvailable } from '@/lib/supabase';
 import { getAuthenticatedUser } from '@/lib/auth-utils';
-
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
 
 export async function POST(request: NextRequest) {
   try {
+    // Check if Supabase is available
+    if (!isSupabaseAvailable()) {
+      return NextResponse.json({
+        success: false,
+        message: 'Service temporarily unavailable - running in demo mode',
+        data: {
+          id: 'demo-' + Date.now(),
+          calculatorType: 'demo',
+          createdAt: new Date().toISOString(),
+        },
+      });
+    }
+
     const user = await getAuthenticatedUser(request);
     if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -34,27 +42,44 @@ export async function POST(request: NextRequest) {
     }
 
     // Save to database
-    const { data, error } = await supabase
-      .from('calculator_sessions')
-      .insert([
-        {
-          user_id: user.id,
-          calculator_type: calculatorType,
-          input_data: inputData,
-          results: results,
-          saved: true,
-          created_at: new Date().toISOString(),
-        },
-      ])
-      .select()
-      .single();
+    let data;
+    try {
+      const supabase = createSupabaseServiceClient();
+      const result = await supabase
+        .from('calculator_sessions')
+        .insert([
+          {
+            user_id: user.id,
+            calculator_type: calculatorType,
+            input_data: inputData,
+            results: results,
+            saved: true,
+            created_at: new Date().toISOString(),
+          },
+        ])
+        .select()
+        .single();
 
-    if (error) {
-      console.error('Database error saving calculation:', error);
-      return NextResponse.json(
-        { error: 'Failed to save calculation' },
-        { status: 500 }
-      );
+      if (result.error) {
+        console.error('Database error saving calculation:', result.error);
+        return NextResponse.json(
+          { error: 'Failed to save calculation' },
+          { status: 500 }
+        );
+      }
+
+      data = result.data;
+    } catch (serviceError) {
+      console.error('Service client error:', serviceError);
+      return NextResponse.json({
+        success: false,
+        message: 'Service temporarily unavailable - calculation not saved',
+        data: {
+          id: 'demo-' + Date.now(),
+          calculatorType: calculatorType,
+          createdAt: new Date().toISOString(),
+        },
+      });
     }
 
     return NextResponse.json({
@@ -77,6 +102,15 @@ export async function POST(request: NextRequest) {
 
 export async function GET(request: NextRequest) {
   try {
+    // Check if Supabase is available
+    if (!isSupabaseAvailable()) {
+      return NextResponse.json({
+        success: true,
+        data: [],
+        message: 'Running in demo mode - no saved calculations available',
+      });
+    }
+
     const user = await getAuthenticatedUser(request);
     if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -86,26 +120,39 @@ export async function GET(request: NextRequest) {
     const calculatorType = searchParams.get('type');
     const limit = parseInt(searchParams.get('limit') || '10');
 
-    let query = supabase
-      .from('calculator_sessions')
-      .select('*')
-      .eq('user_id', user.id)
-      .eq('saved', true)
-      .order('created_at', { ascending: false })
-      .limit(limit);
+    let data;
+    try {
+      const supabase = createSupabaseServiceClient();
+      let query = supabase
+        .from('calculator_sessions')
+        .select('*')
+        .eq('user_id', user.id)
+        .eq('saved', true)
+        .order('created_at', { ascending: false })
+        .limit(limit);
 
-    if (calculatorType) {
-      query = query.eq('calculator_type', calculatorType);
-    }
+      if (calculatorType) {
+        query = query.eq('calculator_type', calculatorType);
+      }
 
-    const { data, error } = await query;
+      const result = await query;
 
-    if (error) {
-      console.error('Database error fetching calculations:', error);
-      return NextResponse.json(
-        { error: 'Failed to fetch calculations' },
-        { status: 500 }
-      );
+      if (result.error) {
+        console.error('Database error fetching calculations:', result.error);
+        return NextResponse.json(
+          { error: 'Failed to fetch calculations' },
+          { status: 500 }
+        );
+      }
+
+      data = result.data;
+    } catch (serviceError) {
+      console.error('Service client error:', serviceError);
+      return NextResponse.json({
+        success: true,
+        data: [],
+        message: 'Service temporarily unavailable - no saved calculations available',
+      });
     }
 
     const formattedData = data.map(record => ({

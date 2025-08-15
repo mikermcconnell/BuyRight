@@ -215,6 +215,9 @@ export function createSupabaseClientComponentClient() {
 
 // Service role client for admin operations (server-side only)
 export function createSupabaseServiceClient() {
+  if (!isSupabaseConfigured) {
+    throw new Error('Supabase is not configured - cannot create service client');
+  }
   if (!supabaseServiceRoleKey) {
     throw new Error('Service role key is required for admin operations');
   }

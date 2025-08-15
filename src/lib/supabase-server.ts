@@ -1,6 +1,6 @@
 import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
-import { Database } from './supabase';
+import { Database, isSupabaseAvailable } from './supabase';
 
 // Environment variables with fallback
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://placeholder.supabase.co';
@@ -8,6 +8,8 @@ const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'placeholde
 
 // Server-side Supabase clients that use cookies from next/headers
 export function createSupabaseRouteHandlerClient() {
+  // Note: This function should only be called during request handling,
+  // not during build time. The caller should check isSupabaseAvailable() first.
   const cookieStore = cookies();
   
   return createServerClient<Database>(supabaseUrl, supabaseAnonKey, {
@@ -26,6 +28,8 @@ export function createSupabaseRouteHandlerClient() {
 }
 
 export function createSupabaseServerComponentClient() {
+  // Note: This function should only be called during request handling,
+  // not during build time. The caller should check isSupabaseAvailable() first.
   const cookieStore = cookies();
   
   return createServerClient<Database>(supabaseUrl, supabaseAnonKey, {

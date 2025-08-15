@@ -1,17 +1,11 @@
 'use client';
 
 import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react';
+import { User } from '@supabase/supabase-js';
+import { supabaseClient, supabaseService, UserProfile, getSupabaseAuthErrorMessage } from '@/lib/supabase';
+import { logger } from '@/lib/logger';
 
-interface UserProfile {
-  id: string;
-  email: string;
-  location?: string;
-  first_time_buyer?: boolean;
-  budget_range?: string;
-  timeline?: string;
-  created_at: string;
-  updated_at: string;
-}
+const authLogger = logger.createDomainLogger('auth');
 
 interface AuthUser {
   id: string;
@@ -43,35 +37,99 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
 
-  // Initialize auth state from localStorage
+  // Initialize auth state from Supabase
   useEffect(() => {
-    const initializeAuth = () => {
+    const initializeAuth = async () => {
       try {
-        const storedUser = localStorage.getItem('buyright_demo_user');
-        const storedProfile = localStorage.getItem('buyright_demo_profile');
-
-        if (storedUser) {
-          const userData = JSON.parse(storedUser);
-          setUser(userData);
+        authLogger.info('Initializing auth state');
+        
+        // Get current session
+        const { data: { session }, error } = await supabaseClient.auth.getSession();
+        
+        if (error) {
+          authLogger.error('Session error:', error);
+          setLoading(false);
+          return;
         }
 
-        if (storedProfile) {
-          const profileData = JSON.parse(storedProfile);
-          setProfile(profileData);
+        if (session?.user) {
+          const supabaseUser = session.user;
+          const authUser: AuthUser = {
+            id: supabaseUser.id,
+            email: supabaseUser.email!,
+            email_verified: !!supabaseUser.email_confirmed_at,
+            created_at: supabaseUser.created_at,
+            updated_at: supabaseUser.updated_at || supabaseUser.created_at,
+          };
+          
+          setUser(authUser);
+          
+          // Load user profile
+          try {
+            const userProfile = await supabaseService.getProfile(supabaseUser.id);
+            setProfile(userProfile);
+            authLogger.info('User session restored', { userId: supabaseUser.id });
+          } catch (profileError) {
+            authLogger.error('Error loading profile:', profileError);
+          }
         }
       } catch (error) {
-        console.error('Error loading demo auth data:', error);
+        authLogger.error('Error initializing auth:', error);
       } finally {
         setLoading(false);
       }
     };
 
     initializeAuth();
+
+    // Listen for auth changes
+    const { data: { subscription } } = supabaseClient.auth.onAuthStateChange(
+      async (event, session) => {
+        authLogger.info('Auth state changed:', event);
+        
+        if (event === 'SIGNED_IN' && session?.user) {
+          const supabaseUser = session.user;
+          const authUser: AuthUser = {
+            id: supabaseUser.id,
+            email: supabaseUser.email!,
+            email_verified: !!supabaseUser.email_confirmed_at,
+            created_at: supabaseUser.created_at,
+            updated_at: supabaseUser.updated_at || supabaseUser.created_at,
+          };
+          
+          setUser(authUser);
+          
+          // Load or create user profile
+          try {
+            let userProfile = await supabaseService.getProfile(supabaseUser.id);
+            if (!userProfile) {
+              // Create default profile if none exists
+              userProfile = await supabaseService.createOrUpdateProfile(supabaseUser.id, {
+                location: 'ON', // Default to Ontario
+                first_time_buyer: true,
+              });
+            }
+            setProfile(userProfile);
+          } catch (profileError) {
+            authLogger.error('Error handling profile on sign in:', profileError);
+          }
+        } else if (event === 'SIGNED_OUT') {
+          setUser(null);
+          setProfile(null);
+        }
+      }
+    );
+
+    return () => {
+      subscription.unsubscribe();
+    };
   }, []);
 
-  // Sign in function (Demo - uses localStorage)
+  // Sign in function using Supabase
   const signIn = async (email: string, password: string) => {
     try {
+      authLogger.info('Attempting sign in', { email });
+      
       // Basic validation
       const trimmedEmail = email.toLowerCase().trim();
       if (!trimmedEmail || !trimmedEmail.includes('@')) {
@@ -88,36 +146,39 @@ export function AuthProvider({ children }: AuthProviderProps) {
         };
       }
 
-      // Demo user creation
-      const demoUser: AuthUser = {
-        id: `demo-${Date.now()}`,
+      // Sign in with Supabase
+      const { data, error } = await supabaseClient.auth.signInWithPassword({
         email: trimmedEmail,
-        email_verified: true,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-      };
+        password,
+      });
 
-      // Check if user has an existing profile
-      const existingProfile = localStorage.getItem('buyright_demo_profile');
-      let nextStep = '/onboarding';
-
-      if (existingProfile) {
-        const profileData = JSON.parse(existingProfile);
-        if (profileData.location) {
-          nextStep = '/dashboard';
-        }
+      if (error) {
+        authLogger.error('Sign in error:', error);
+        return {
+          success: false,
+          error: getSupabaseAuthErrorMessage(error),
+        };
       }
 
-      // Store user data
-      localStorage.setItem('buyright_demo_user', JSON.stringify(demoUser));
-      setUser(demoUser);
+      if (!data.user) {
+        return {
+          success: false,
+          error: 'Sign in failed - no user returned',
+        };
+      }
 
+      // Check if user has completed onboarding
+      const userProfile = await supabaseService.getProfile(data.user.id);
+      const nextStep = userProfile?.location ? '/dashboard' : '/onboarding';
+
+      authLogger.info('Sign in successful', { userId: data.user.id, nextStep });
+      
       return {
         success: true,
         nextStep,
       };
     } catch (error) {
-      console.error('Sign in error:', error);
+      authLogger.error('Unexpected sign in error:', error);
       return {
         success: false,
         error: 'An unexpected error occurred',
@@ -125,9 +186,11 @@ export function AuthProvider({ children }: AuthProviderProps) {
     }
   };
 
-  // Sign up function (Demo - uses localStorage)
+  // Sign up function using Supabase
   const signUp = async (email: string, password: string, metadata = {}) => {
     try {
+      authLogger.info('Attempting sign up', { email });
+      
       // Basic validation
       const trimmedEmail = email.toLowerCase().trim();
       if (!trimmedEmail || !trimmedEmail.includes('@')) {
@@ -144,25 +207,36 @@ export function AuthProvider({ children }: AuthProviderProps) {
         };
       }
 
-      // Create demo user
-      const demoUser: AuthUser = {
-        id: `demo-${Date.now()}`,
+      // Sign up with Supabase
+      const { data, error } = await supabaseClient.auth.signUp({
         email: trimmedEmail,
-        email_verified: true,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-      };
+        password,
+        options: {
+          data: metadata,
+        },
+      });
 
-      // Store user data
-      localStorage.setItem('buyright_demo_user', JSON.stringify(demoUser));
-      setUser(demoUser);
+      if (error) {
+        authLogger.error('Sign up error:', error);
+        return {
+          success: false,
+          error: getSupabaseAuthErrorMessage(error),
+        };
+      }
+
+      const needsConfirmation = !data.session && data.user && !data.user.email_confirmed_at;
+      
+      authLogger.info('Sign up successful', { 
+        userId: data.user?.id, 
+        needsConfirmation 
+      });
 
       return {
         success: true,
-        needsConfirmation: false,
+        needsConfirmation,
       };
     } catch (error) {
-      console.error('Sign up error:', error);
+      authLogger.error('Unexpected sign up error:', error);
       return {
         success: false,
         error: 'An unexpected error occurred',
@@ -170,17 +244,30 @@ export function AuthProvider({ children }: AuthProviderProps) {
     }
   };
 
-  // Sign out function (Demo - clears localStorage)
+  // Sign out function using Supabase
   const signOut = async () => {
     try {
-      localStorage.removeItem('buyright_demo_user');
-      localStorage.removeItem('buyright_demo_profile');
+      authLogger.info('Attempting sign out');
+      
+      const { error } = await supabaseClient.auth.signOut();
+      
+      if (error) {
+        authLogger.error('Sign out error:', error);
+        return {
+          success: false,
+          error: getSupabaseAuthErrorMessage(error),
+        };
+      }
+
+      // Clear local state (will be handled by auth state change listener)
       setUser(null);
       setProfile(null);
+      
+      authLogger.info('Sign out successful');
 
       return { success: true };
     } catch (error) {
-      console.error('Sign out error:', error);
+      authLogger.error('Unexpected sign out error:', error);
       return {
         success: false,
         error: 'An unexpected error occurred',
@@ -188,22 +275,20 @@ export function AuthProvider({ children }: AuthProviderProps) {
     }
   };
 
-  // Refresh profile
+  // Refresh profile from Supabase
   const refreshProfile = async () => {
     if (!user) return;
     
     try {
-      const storedProfile = localStorage.getItem('buyright_demo_profile');
-      if (storedProfile) {
-        const profileData = JSON.parse(storedProfile);
-        setProfile(profileData);
-      }
+      authLogger.info('Refreshing profile', { userId: user.id });
+      const userProfile = await supabaseService.getProfile(user.id);
+      setProfile(userProfile);
     } catch (error) {
-      console.error('Error refreshing profile:', error);
+      authLogger.error('Error refreshing profile:', error);
     }
   };
 
-  // Update profile
+  // Update profile in Supabase
   const updateProfile = async (updates: Partial<UserProfile>) => {
     if (!user) {
       return {
@@ -213,25 +298,22 @@ export function AuthProvider({ children }: AuthProviderProps) {
     }
 
     try {
-      const existingProfile = profile || {
-        id: user.id,
-        email: user.email,
-        created_at: user.created_at,
-        updated_at: new Date().toISOString(),
-      };
-
-      const updatedProfile = {
-        ...existingProfile,
-        ...updates,
-        updated_at: new Date().toISOString(),
-      };
-
-      localStorage.setItem('buyright_demo_profile', JSON.stringify(updatedProfile));
-      setProfile(updatedProfile);
-
-      return { success: true };
+      authLogger.info('Updating profile', { userId: user.id, updates });
+      
+      const updatedProfile = await supabaseService.createOrUpdateProfile(user.id, updates);
+      
+      if (updatedProfile) {
+        setProfile(updatedProfile);
+        authLogger.info('Profile updated successfully');
+        return { success: true };
+      } else {
+        return {
+          success: false,
+          error: 'Failed to update profile',
+        };
+      }
     } catch (error) {
-      console.error('Update profile error:', error);
+      authLogger.error('Update profile error:', error);
       return {
         success: false,
         error: 'An unexpected error occurred',

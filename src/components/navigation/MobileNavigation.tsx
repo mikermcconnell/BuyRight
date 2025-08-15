@@ -88,8 +88,16 @@ export default function MobileNavigation() {
   const [lastScrollY, setLastScrollY] = useState(0);
   const [selectedIndex, setSelectedIndex] = useState(0);
   
+  // Gesture handling for horizontal navigation
+  const navX = useMotionValue(0);
+
+  // Don't show navigation on auth pages or if user isn't authenticated
+  const shouldHideNavigation = !user || pathname.startsWith('/login') || pathname.startsWith('/register') || pathname.startsWith('/onboarding');
+  
   // Hide/show navigation on scroll
   useEffect(() => {
+    if (shouldHideNavigation) return;
+    
     const handleScroll = () => {
       const currentScrollY = window.scrollY;
       
@@ -104,10 +112,9 @@ export default function MobileNavigation() {
 
     window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
-  }, [lastScrollY]);
+  }, [lastScrollY, shouldHideNavigation]);
 
-  // Don't show navigation on auth pages or if user isn't authenticated
-  if (!user || pathname.startsWith('/login') || pathname.startsWith('/register') || pathname.startsWith('/onboarding')) {
+  if (shouldHideNavigation) {
     return null;
   }
 
@@ -128,16 +135,15 @@ export default function MobileNavigation() {
   
   // Update selected index when pathname changes
   useEffect(() => {
+    if (shouldHideNavigation) return;
+    
     const activeIndex = displayItems.findIndex(item => 
       pathname === item.href || pathname.startsWith(item.href + '/')
     );
     if (activeIndex !== -1) {
       setSelectedIndex(activeIndex);
     }
-  }, [pathname, displayItems]);
-
-  // Gesture handling for horizontal navigation
-  const navX = useMotionValue(0);
+  }, [pathname, displayItems, shouldHideNavigation]);
   const handlePan = (event: any, info: PanInfo) => {
     const { offset } = info;
     

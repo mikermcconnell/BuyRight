@@ -25,6 +25,11 @@ import {
 import { ProgressPersistence } from '@/lib/progressPersistence';
 import { JourneyApi } from '@/lib/progressApi';
 import { useRegional } from './RegionalContext';
+import { useAuth } from './AuthContext';
+import { supabaseService } from '@/lib/supabase';
+import { logger } from '@/lib/logger';
+
+const journeyLogger = logger.createDomainLogger('journey');
 
 // Journey Context Type
 interface JourneyContextType extends JourneyContextState {
@@ -236,16 +241,23 @@ interface JourneyProviderProps {
 export function JourneyProvider({ children }: JourneyProviderProps) {
   const [state, dispatch] = useReducer(journeyReducer, initialState);
   const { currentRegion } = useRegional();
+  const { user } = useAuth();
 
-  // Initialize journey when region is loaded
+  // Initialize journey when region and user are loaded
   useEffect(() => {
-    if (currentRegion) {
+    if (currentRegion && user) {
       initializeJourney(currentRegion);
     }
-  }, [currentRegion]);
+  }, [currentRegion, user]);
 
   const initializeJourney = async (regionCode: RegionCode) => {
+    if (!user) {
+      journeyLogger.warn('Cannot initialize journey without authenticated user');
+      return;
+    }
+
     try {
+      journeyLogger.info('Initializing journey', { userId: user.id, regionCode });
       dispatch({ type: 'SET_LOADING', payload: true });
 
       // Load the journey template
@@ -257,14 +269,28 @@ export function JourneyProvider({ children }: JourneyProviderProps) {
         } 
       });
 
-      // Load or create user progress using enhanced persistence
-      let userProgress = await ProgressPersistence.loadProgress('demo-user');
+      // Load user progress from Supabase
+      const supabaseProgress = await supabaseService.getJourneyProgress(user.id);
       
-      if (!userProgress || userProgress.regionCode !== regionCode) {
-        // Create new progress for this region
-        userProgress = initializeUserProgress('demo-user', regionCode);
-        await ProgressPersistence.saveProgress(userProgress);
+      let userProgress: UserJourneyProgress;
+      
+      if (supabaseProgress.length === 0) {
+        // Create new progress for this user and region
+        journeyLogger.info('Creating new journey progress for user');
+        userProgress = initializeUserProgress(user.id, regionCode);
+        
+        // Save initial progress to Supabase
+        await saveProgressToSupabase(userProgress);
+      } else {
+        // Convert Supabase progress to UserJourneyProgress format
+        userProgress = convertSupabaseProgressToUserProgress(supabaseProgress, user.id, regionCode);
+        journeyLogger.info('Loaded existing progress from Supabase', { 
+          completedSteps: userProgress.completedSteps.length 
+        });
       }
+
+      // Also maintain localStorage backup for offline functionality
+      await ProgressPersistence.saveProgress(userProgress);
 
       dispatch({ 
         type: 'UPDATE_PROGRESS', 
@@ -272,11 +298,83 @@ export function JourneyProvider({ children }: JourneyProviderProps) {
       });
 
     } catch (error) {
-      console.error('Failed to initialize journey:', error);
+      journeyLogger.error('Failed to initialize journey:', error);
       dispatch({ 
         type: 'SET_ERROR', 
         payload: 'Failed to initialize journey' 
       });
+    }
+  };
+
+  // Convert Supabase journey progress to UserJourneyProgress format
+  const convertSupabaseProgressToUserProgress = (
+    supabaseProgress: any[],
+    userId: string,
+    regionCode: RegionCode
+  ): UserJourneyProgress => {
+    const completedSteps = supabaseProgress
+      .filter(step => step.completed)
+      .map(step => step.step_id);
+
+    const stepProgress: { [stepId: string]: StepProgress } = {};
+    
+    supabaseProgress.forEach(step => {
+      stepProgress[step.step_id] = {
+        stepId: step.step_id,
+        status: step.completed ? 'completed' : 'in_progress',
+        startedAt: step.created_at ? new Date(step.created_at) : new Date(),
+        completedAt: step.completed_at ? new Date(step.completed_at) : undefined,
+        completedChecklist: [], // We'll need to add this to Supabase schema if needed
+        timeSpent: 0, // We'll need to track this separately
+        notes: step.notes || undefined,
+      };
+    });
+
+    // Find the current step (the most recent incomplete step or the first available step)
+    const incompleteSteps = supabaseProgress.filter(step => !step.completed);
+    const currentStepId = incompleteSteps.length > 0 
+      ? incompleteSteps[incompleteSteps.length - 1].step_id
+      : null;
+
+    return {
+      userId,
+      regionCode,
+      completedSteps,
+      currentStepId,
+      stepProgress,
+      completedChecklist: [], // We'll populate this from stepProgress if needed
+      startedAt: new Date(Math.min(...supabaseProgress.map(s => new Date(s.created_at).getTime()))),
+      lastUpdated: new Date(Math.max(...supabaseProgress.map(s => new Date(s.updated_at).getTime()))),
+    };
+  };
+
+  // Save progress to Supabase
+  const saveProgressToSupabase = async (userProgress: UserJourneyProgress) => {
+    if (!user) return;
+
+    try {
+      journeyLogger.info('Saving progress to Supabase', { 
+        userId: user.id, 
+        completedSteps: userProgress.completedSteps.length 
+      });
+
+      // Create or update progress records for each step
+      for (const [stepId, stepProgress] of Object.entries(userProgress.stepProgress)) {
+        await supabaseService.updateJourneyStep(
+          user.id,
+          stepId,
+          stepProgress.stepId.split('-')[0], // Extract phase from step ID
+          stepProgress.status === 'completed',
+          stepProgress.notes,
+          {
+            timeSpent: stepProgress.timeSpent,
+            completedChecklist: stepProgress.completedChecklist,
+          }
+        );
+      }
+    } catch (error) {
+      journeyLogger.error('Failed to save progress to Supabase:', error);
+      // Don't throw - allow offline functionality to continue
     }
   };
 
@@ -312,25 +410,48 @@ export function JourneyProvider({ children }: JourneyProviderProps) {
 
   // Action handlers
   const startStep = async (stepId: string) => {
+    if (!user) return;
+    
     dispatch({ type: 'START_STEP', payload: { stepId } });
     
-    // Sync with step API
+    // Sync with Supabase
     try {
-      await JourneyApi.steps.startStep('demo-user', stepId);
+      await supabaseService.updateJourneyStep(
+        user.id,
+        stepId,
+        stepId.split('-')[0], // Extract phase from step ID
+        false, // not completed, just started
+        undefined,
+        { startedAt: new Date().toISOString() }
+      );
+      journeyLogger.info('Step started in Supabase', { stepId });
     } catch (error) {
-      console.error('Failed to sync step start with API:', error);
+      journeyLogger.error('Failed to sync step start with Supabase:', error);
       // Continue with local state - the persistence service will handle offline sync
     }
   };
 
   const completeStep = async (stepId: string, notes?: string, timeSpent?: number) => {
+    if (!user) return;
+    
     dispatch({ type: 'COMPLETE_STEP', payload: { stepId, notes } });
     
-    // Call step completion API in background
+    // Sync with Supabase
     try {
-      await JourneyApi.steps.completeStep('demo-user', stepId, notes, timeSpent);
+      await supabaseService.updateJourneyStep(
+        user.id,
+        stepId,
+        stepId.split('-')[0], // Extract phase from step ID
+        true, // completed
+        notes,
+        { 
+          timeSpent: timeSpent || 0,
+          completedAt: new Date().toISOString()
+        }
+      );
+      journeyLogger.info('Step completed in Supabase', { stepId });
     } catch (error) {
-      console.error('Failed to sync step completion with API:', error);
+      journeyLogger.error('Failed to sync step completion with Supabase:', error);
       // Continue with local state - the persistence service will handle offline sync
     }
     
@@ -344,13 +465,15 @@ export function JourneyProvider({ children }: JourneyProviderProps) {
           payload: nextStepUpdate 
         });
         
-        // Update progress via persistence service
-        await ProgressPersistence.updateProgress('demo-user', nextStepUpdate);
+        // Update progress via persistence service and Supabase
+        await ProgressPersistence.updateProgress(user.id, nextStepUpdate);
       }
     }
   };
 
   const completeChecklistItem = async (stepId: string, checklistItemId: string) => {
+    if (!user) return;
+    
     // Determine current state to toggle properly
     const currentStepProgress = state.userProgress?.stepProgress[stepId];
     const isCurrentlyCompleted = currentStepProgress?.completedChecklist?.includes(checklistItemId) || false;
@@ -361,11 +484,27 @@ export function JourneyProvider({ children }: JourneyProviderProps) {
       payload: { stepId, checklistItemId } 
     });
     
-    // Sync with checklist API
+    // Sync with Supabase (save updated checklist data)
     try {
-      await JourneyApi.checklist.updateChecklistItem('demo-user', stepId, checklistItemId, newCompletedState);
+      const updatedChecklist = currentStepProgress?.completedChecklist || [];
+      const newChecklist = newCompletedState 
+        ? [...updatedChecklist, checklistItemId]
+        : updatedChecklist.filter(id => id !== checklistItemId);
+      
+      await supabaseService.updateJourneyStep(
+        user.id,
+        stepId,
+        stepId.split('-')[0],
+        currentStepProgress?.status === 'completed' || false,
+        currentStepProgress?.notes,
+        { 
+          completedChecklist: newChecklist,
+          timeSpent: currentStepProgress?.timeSpent || 0
+        }
+      );
+      journeyLogger.info('Checklist item updated in Supabase', { stepId, checklistItemId, completed: newCompletedState });
     } catch (error) {
-      console.error('Failed to sync checklist completion with API:', error);
+      journeyLogger.error('Failed to sync checklist completion with Supabase:', error);
       // Continue with local state - the persistence service will handle offline sync
     }
   };
@@ -378,10 +517,21 @@ export function JourneyProvider({ children }: JourneyProviderProps) {
   };
 
   const resetProgress = async () => {
-    if (currentRegion) {
-      await ProgressPersistence.resetProgress('demo-user');
-      const newProgress = initializeUserProgress('demo-user', currentRegion);
+    if (currentRegion && user) {
+      journeyLogger.info('Resetting progress for user', { userId: user.id });
+      
+      await ProgressPersistence.resetProgress(user.id);
+      const newProgress = initializeUserProgress(user.id, currentRegion);
       await ProgressPersistence.saveProgress(newProgress);
+      
+      // Clear progress in Supabase (we could delete records or mark them as reset)
+      try {
+        // For now, we'll create new records that effectively reset the progress
+        await saveProgressToSupabase(newProgress);
+      } catch (error) {
+        journeyLogger.error('Failed to reset progress in Supabase:', error);
+      }
+      
       dispatch({ 
         type: 'UPDATE_PROGRESS', 
         payload: newProgress 
@@ -452,6 +602,17 @@ export function JourneyProvider({ children }: JourneyProviderProps) {
       
       // Save and update the progress
       await ProgressPersistence.saveProgress(unlockedProgress);
+      
+      // Also save to Supabase if user is authenticated
+      if (user) {
+        try {
+          await saveProgressToSupabase(unlockedProgress);
+          console.log('Progress saved to Supabase');
+        } catch (error) {
+          console.error('Failed to save unlocked progress to Supabase:', error);
+        }
+      }
+      
       console.log('Progress saved to persistence');
       
       dispatch({ 

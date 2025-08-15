@@ -556,7 +556,7 @@ export default function PropertyValueAssessmentGuide() {
                               </ul>
                             </div>
                             
-                            {step.tools && (
+                            {'tools' in step && step.tools && (
                               <div>
                                 <h5 className="font-medium text-gray-800 mb-2">Recommended Tools:</h5>
                                 <div className="flex flex-wrap gap-2">
@@ -569,11 +569,11 @@ export default function PropertyValueAssessmentGuide() {
                               </div>
                             )}
                             
-                            {step.adjustments && (
+                            {(step as any).adjustments && (
                               <div>
                                 <h5 className="font-medium text-gray-800 mb-2">Typical Adjustments:</h5>
                                 <ul className="space-y-1">
-                                  {step.adjustments.map((adj, i) => (
+                                  {(step as any).adjustments.map((adj: string, i: number) => (
                                     <li key={i} className="text-sm text-gray-600 flex items-start">
                                       <span className="text-blue-500 mr-2">•</span>
                                       {adj}
@@ -583,18 +583,18 @@ export default function PropertyValueAssessmentGuide() {
                               </div>
                             )}
                             
-                            {step.formula && (
+                            {'formula' in step && step.formula && (
                               <div className={`p-3 rounded-lg ${colorClasses.accent}`}>
                                 <h5 className={`font-medium mb-1 ${colorClasses.text}`}>Formula:</h5>
                                 <code className={`text-sm ${colorClasses.text}`}>{step.formula}</code>
                               </div>
                             )}
                             
-                            {step.costEstimates && (
+                            {'costEstimates' in step && step.costEstimates && Array.isArray((step as any).costEstimates) && (
                               <div>
                                 <h5 className="font-medium text-gray-800 mb-2">Construction Cost Estimates:</h5>
                                 <ul className="space-y-1">
-                                  {step.costEstimates.map((cost, i) => (
+                                  {(step as any).costEstimates.map((cost: string, i: number) => (
                                     <li key={i} className="text-sm text-gray-600 flex items-start">
                                       <span className="text-orange-500 mr-2">•</span>
                                       {cost}
@@ -604,11 +604,11 @@ export default function PropertyValueAssessmentGuide() {
                               </div>
                             )}
                             
-                            {step.depreciationRates && (
+                            {'depreciationRates' in step && step.depreciationRates && Array.isArray((step as any).depreciationRates) && (
                               <div>
                                 <h5 className="font-medium text-gray-800 mb-2">Depreciation Guidelines:</h5>
                                 <ul className="space-y-1">
-                                  {step.depreciationRates.map((rate, i) => (
+                                  {(step as any).depreciationRates.map((rate: string, i: number) => (
                                     <li key={i} className="text-sm text-gray-600 flex items-start">
                                       <span className="text-red-500 mr-2">•</span>
                                       {rate}

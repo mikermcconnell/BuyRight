@@ -1,5 +1,5 @@
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
-import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
+import { createBrowserClient } from '@supabase/ssr';
 
 // Environment variables
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
@@ -204,7 +204,7 @@ export const supabaseClient = createClient<Database>(supabaseUrl, supabaseAnonKe
 
 // Client component client
 export function createSupabaseClientComponentClient() {
-  return createClientComponentClient<Database>();
+  return createBrowserClient<Database>(supabaseUrl, supabaseAnonKey);
 }
 
 // Service role client for admin operations (server-side only)

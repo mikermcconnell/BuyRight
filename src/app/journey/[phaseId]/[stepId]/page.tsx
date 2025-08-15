@@ -577,21 +577,20 @@ export default function StepDetailPage() {
             <div className="space-y-4">
               {currentStep.resources.map((resource, index) => (
                 <div key={index}>
-                  {resource.type === 'guide' ? (
-                    // Guide-type resources that link to separate pages
-                    <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
-                      <h3 className="font-bold text-green-900 mb-1 flex items-center">
-                        <span className="text-xl mr-2">📖</span>
-                        {resource.title}
-                      </h3>
-                      <p className="text-sm text-green-700 mb-3">{resource.description}</p>
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center space-x-2">
-                          <span className="text-xs bg-green-100 text-green-800 px-2 py-1 rounded-full font-medium">
-                            {resource.type}
-                          </span>
-                          <span className="text-xs bg-green-100 text-green-800 px-2 py-1 rounded-full font-medium">
-                            {resource.category}
+                  {/* All resources get the same handling now since 'guide' type doesn't exist */}
+                  <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
+                    <h3 className="font-bold text-green-900 mb-1 flex items-center">
+                      <span className="text-xl mr-2">📖</span>
+                      {resource.title}
+                    </h3>
+                    <p className="text-sm text-green-700 mb-3">{resource.description}</p>
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center space-x-2">
+                        <span className="text-xs bg-green-100 text-green-800 px-2 py-1 rounded-full font-medium">
+                          {resource.type}
+                        </span>
+                        <span className="text-xs bg-green-100 text-green-800 px-2 py-1 rounded-full font-medium">
+                          {resource.category}
                           </span>
                         </div>
                         {(resource as any).url && (
@@ -605,32 +604,6 @@ export default function StepDetailPage() {
                         )}
                       </div>
                     </div>
-                  ) : (
-                    // Regular resources (calculators, links, etc.)
-                    <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
-                      <h3 className="font-medium text-blue-900 mb-1">{resource.title}</h3>
-                      <p className="text-sm text-blue-700 mb-2">{resource.description}</p>
-                      <div className="flex items-center space-x-2">
-                        <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full">
-                          {resource.type}
-                        </span>
-                        <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full">
-                          {resource.category}
-                        </span>
-                      </div>
-                      {(resource as any).url && (
-                        <div className="mt-3">
-                          <a 
-                            href={(resource as any).url} 
-                            className="text-blue-600 hover:text-blue-800 font-medium text-sm flex items-center space-x-1"
-                          >
-                            <span>Open {resource.type}</span>
-                            <span>→</span>
-                          </a>
-                        </div>
-                      )}
-                    </div>
-                  )}
                 </div>
               ))}
             </div>

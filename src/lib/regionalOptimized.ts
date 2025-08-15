@@ -194,17 +194,17 @@ const loadRegionalDataLazy = async (regionCode: RegionCode): Promise<any> => {
   const startTime = performance.now();
   
   try {
-    let module: any;
+    let regionalModule: any;
     
     switch (regionCode) {
       case 'ON':
-        module = await import('@/data/regional/ontario.json');
+        regionalModule = await import('@/data/regional/ontario.json');
         break;
       case 'BC':
-        module = await import('@/data/regional/bc.json');
+        regionalModule = await import('@/data/regional/bc.json');
         break;
       case 'US_CA':
-        module = await import('@/data/regional/us-ca.json');
+        regionalModule = await import('@/data/regional/us-ca.json');
         break;
       case 'US_NY':
       case 'US_TX':
@@ -218,7 +218,7 @@ const loadRegionalDataLazy = async (regionCode: RegionCode): Promise<any> => {
     const loadTime = performance.now() - startTime;
     regionalCache.metrics.loadTime += loadTime;
 
-    return module.default || module;
+    return regionalModule.default || regionalModule;
   } catch (error) {
     throw new Error(`Failed to load regional data for ${regionCode}: ${error}`);
   }

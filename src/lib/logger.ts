@@ -149,12 +149,29 @@ class Logger {
   setConsoleOutput(enabled: boolean): void {
     this.enableConsole = enabled;
   }
+
+  /**
+   * Create a domain-specific logger
+   */
+  createDomainLogger(domain: string) {
+    return {
+      error: (message: string, error?: Error, context?: Record<string, any>) => 
+        this.error(`${domain}: ${message}`, error, context),
+      warn: (message: string, context?: Record<string, any>) => 
+        this.warn(`${domain}: ${message}`, context),
+      info: (message: string, context?: Record<string, any>) => 
+        this.info(`${domain}: ${message}`, context),
+      debug: (message: string, context?: Record<string, any>) => 
+        this.debug(`${domain}: ${message}`, context),
+    };
+  }
 }
 
 // Create singleton instance
 const logger = new Logger();
 
 export default logger;
+export { logger };
 
 // Convenience exports for common logging operations
 export const logError = (message: string, error?: Error, context?: Record<string, any>) => 

@@ -407,7 +407,7 @@ export default function PropertyFeaturesPriorityGuide() {
 
   const calculatePropertyScore = (propertyName: string) => {
     const property = propertyScores[propertyName];
-    if (!property) return 0;
+    if (!property) return "0";
 
     let totalWeightedScore = 0;
     let totalWeight = 0;
@@ -420,7 +420,7 @@ export default function PropertyFeaturesPriorityGuide() {
       }
     });
 
-    return totalWeight > 0 ? (totalWeightedScore / totalWeight).toFixed(1) : 0;
+    return totalWeight > 0 ? (totalWeightedScore / totalWeight).toFixed(1) : "0";
   };
 
   const saveProperty = () => {

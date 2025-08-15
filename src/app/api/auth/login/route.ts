@@ -1,11 +1,22 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createSupabaseRouteHandlerClient } from '@/lib/supabase-server';
-import { SupabaseService, getSupabaseAuthErrorMessage } from '@/lib/supabase';
-import { authRateLimiter, getClientIdentifier } from '@/lib/rate-limiter';
+import { SupabaseService, getSupabaseAuthErrorMessage, isSupabaseAvailable } from '@/lib/supabase';
 
 // POST /api/auth/login
 export async function POST(request: NextRequest) {
-  const clientId = getClientIdentifier(request);
+  // Check if Supabase is configured
+  if (!isSupabaseAvailable()) {
+    return NextResponse.json(
+      {
+        success: false,
+        error: {
+          message: 'Authentication service temporarily unavailable - Demo mode',
+          code: 'SERVICE_UNAVAILABLE'
+        }
+      },
+      { status: 503 }
+    );
+  }
   
   try {
     const supabase = createSupabaseRouteHandlerClient();

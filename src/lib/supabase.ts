@@ -1,13 +1,16 @@
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import { createBrowserClient } from '@supabase/ssr';
 
-// Environment variables
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
+// Environment variables with fallback for deployment
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://placeholder.supabase.co';
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'placeholder-key';
 const supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
-if (!supabaseUrl || !supabaseAnonKey) {
-  throw new Error('Missing Supabase environment variables. Please check your .env.local file.');
+// Only throw error in production if actually using Supabase features
+const isSupabaseConfigured = !!(process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY);
+
+if (!isSupabaseConfigured && process.env.NODE_ENV === 'production') {
+  console.warn('⚠️ Supabase not configured - running in demo mode');
 }
 
 // Database types based on our schema
@@ -198,6 +201,9 @@ export interface Database {
     };
   };
 }
+
+// Helper to check if Supabase is properly configured
+export const isSupabaseAvailable = () => isSupabaseConfigured;
 
 // Client-side Supabase client for browser
 export const supabaseClient = createClient<Database>(supabaseUrl, supabaseAnonKey);

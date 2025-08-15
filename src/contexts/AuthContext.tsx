@@ -2,7 +2,7 @@
 
 import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import { User } from '@supabase/supabase-js';
-import { supabaseClient, supabaseService, UserProfile, getSupabaseAuthErrorMessage } from '@/lib/supabase';
+import { supabaseClient, supabaseService, UserProfile, getSupabaseAuthErrorMessage, isSupabaseAvailable } from '@/lib/supabase';
 import { logger } from '@/lib/logger';
 
 const authLogger = logger.createDomainLogger('auth');
@@ -42,6 +42,13 @@ export function AuthProvider({ children }: AuthProviderProps) {
     const initializeAuth = async () => {
       try {
         authLogger.info('Initializing auth state');
+        
+        // Check if Supabase is available
+        if (!isSupabaseAvailable()) {
+          authLogger.warn('Supabase not configured - running in demo mode');
+          setLoading(false);
+          return;
+        }
         
         // Get current session
         const { data: { session }, error } = await supabaseClient.auth.getSession();
@@ -130,6 +137,14 @@ export function AuthProvider({ children }: AuthProviderProps) {
     try {
       authLogger.info('Attempting sign in', { email });
       
+      // Check if Supabase is available
+      if (!isSupabaseAvailable()) {
+        return {
+          success: false,
+          error: 'Authentication service temporarily unavailable - Demo mode active',
+        };
+      }
+      
       // Basic validation
       const trimmedEmail = email.toLowerCase().trim();
       if (!trimmedEmail || !trimmedEmail.includes('@')) {
@@ -190,6 +205,14 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const signUp = async (email: string, password: string, metadata = {}) => {
     try {
       authLogger.info('Attempting sign up', { email });
+      
+      // Check if Supabase is available
+      if (!isSupabaseAvailable()) {
+        return {
+          success: false,
+          error: 'Registration service temporarily unavailable - Demo mode active',
+        };
+      }
       
       // Basic validation
       const trimmedEmail = email.toLowerCase().trim();

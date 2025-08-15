@@ -136,6 +136,34 @@ export default function StepDetailPage() {
   const nextStep = getNextStep();
   const previousStep = getPreviousStep();
 
+  // Check if next step is in a different phase
+  const getNextPhaseInfo = () => {
+    if (!nextStep || !currentPhase) return null;
+    
+    const nextStepPhase = phases.find(phase => 
+      phase.steps.some(step => step.id === nextStep.id)
+    );
+    
+    // Debug logging for development
+    if (process.env.NODE_ENV === 'development') {
+      console.log('Current step:', currentStep?.id);
+      console.log('Current phase:', currentPhase.id, currentPhase.title);
+      console.log('Next step:', nextStep.id, nextStep.title);
+      console.log('Next step phase:', nextStepPhase?.id, nextStepPhase?.title);
+    }
+    
+    if (nextStepPhase && nextStepPhase.id !== currentPhase.id) {
+      return {
+        phase: nextStepPhase,
+        isNewPhase: true
+      };
+    }
+    
+    return null;
+  };
+
+  const nextPhaseInfo = getNextPhaseInfo();
+
   return (
     <div className="duolingo-container min-h-screen py-8">
       <div className="w-full max-w-4xl">
@@ -347,12 +375,183 @@ export default function StepDetailPage() {
                         </div>
                       )}
                       
+                      {/* Special link for gather-documents item */}
+                      {item.id === 'gather-documents' && (
+                        <div className="mt-2">
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              router.push('/guides/pre-approval-documents');
+                            }}
+                            className="text-xs bg-green-100 hover:bg-green-200 text-green-700 px-3 py-1.5 rounded-full font-medium transition-all duration-200 flex items-center space-x-1"
+                          >
+                            <span>📋</span>
+                            <span>View Complete Document Checklist</span>
+                          </button>
+                        </div>
+                      )}
+                      
+                      {/* Special link for reach-out-to-agents item */}
+                      {item.id === 'reach-out-to-agents' && (
+                        <div className="mt-2">
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              router.push('/guides/selecting-real-estate-agent');
+                            }}
+                            className="text-xs bg-blue-100 hover:bg-blue-200 text-blue-700 px-3 py-1.5 rounded-full font-medium transition-all duration-200 flex items-center space-x-1"
+                          >
+                            <span>🏘️</span>
+                            <span>Agent Selection Guide</span>
+                          </button>
+                        </div>
+                      )}
+                      
+                      {/* Special link for define-criteria item */}
+                      {item.id === 'define-criteria' && (
+                        <div className="mt-2">
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              router.push('/guides/property-features-priority');
+                            }}
+                            className="text-xs bg-purple-100 hover:bg-purple-200 text-purple-700 px-3 py-1.5 rounded-full font-medium transition-all duration-200 flex items-center space-x-1"
+                          >
+                            <span>⭐</span>
+                            <span>Property Priority Guide</span>
+                          </button>
+                        </div>
+                      )}
+                      
+                      {/* Special link for diy-market-research item */}
+                      {item.id === 'diy-market-research' && (
+                        <div className="mt-2">
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              router.push('/guides/diy-market-research');
+                            }}
+                            className="text-xs bg-orange-100 hover:bg-orange-200 text-orange-700 px-3 py-1.5 rounded-full font-medium transition-all duration-200 flex items-center space-x-1"
+                          >
+                            <span>📊</span>
+                            <span>DIY Research Guide</span>
+                          </button>
+                        </div>
+                      )}
+                      
+                      {/* Special link for tour-homes item */}
+                      {item.id === 'tour-homes' && (
+                        <div className="mt-2">
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              router.push('/guides/property-features-priority#scoring');
+                            }}
+                            className="text-xs bg-green-100 hover:bg-green-200 text-green-700 px-3 py-1.5 rounded-full font-medium transition-all duration-200 flex items-center space-x-1"
+                          >
+                            <span>⭐</span>
+                            <span>Property Scoring Tool</span>
+                          </button>
+                        </div>
+                      )}
+                      
+                      {/* Special link for assess-property-value item */}
+                      {item.id === 'assess-property-value' && (
+                        <div className="mt-2">
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              router.push('/guides/property-value-assessment');
+                            }}
+                            className="text-xs bg-blue-100 hover:bg-blue-200 text-blue-700 px-3 py-1.5 rounded-full font-medium transition-all duration-200 flex items-center space-x-1"
+                          >
+                            <span>💰</span>
+                            <span>Property Value Assessment Guide</span>
+                          </button>
+                        </div>
+                      )}
+                      
+                      {/* Special link for determine-offer-price item */}
+                      {item.id === 'determine-offer-price' && (
+                        <div className="mt-2">
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              router.push('/guides/offer-negotiation-strategy');
+                            }}
+                            className="text-xs bg-green-100 hover:bg-green-200 text-green-700 px-3 py-1.5 rounded-full font-medium transition-all duration-200 flex items-center space-x-1"
+                          >
+                            <span>🤝</span>
+                            <span>Offer Strategy Guide</span>
+                          </button>
+                        </div>
+                      )}
+                      
+                      {/* Special link for include-conditions item */}
+                      {item.id === 'include-conditions' && (
+                        <div className="mt-2">
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              router.push('/guides/offer-conditions');
+                            }}
+                            className="text-xs bg-purple-100 hover:bg-purple-200 text-purple-700 px-3 py-1.5 rounded-full font-medium transition-all duration-200 flex items-center space-x-1"
+                          >
+                            <span>🛡️</span>
+                            <span>Conditions Guide</span>
+                          </button>
+                        </div>
+                      )}
+                      
+                      {/* Special link for submit-offer item */}
+                      {item.id === 'submit-offer' && (
+                        <div className="mt-2">
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              router.push('/guides/offer-submission-timeline');
+                            }}
+                            className="text-xs bg-red-100 hover:bg-red-200 text-red-700 px-3 py-1.5 rounded-full font-medium transition-all duration-200 flex items-center space-x-1"
+                          >
+                            <span>⏰</span>
+                            <span>Timeline Guide</span>
+                          </button>
+                        </div>
+                      )}
+                      
+                      {/* Special link for test-utilities item */}
+                      {item.id === 'test-utilities' && (
+                        <div className="mt-2">
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              router.push('/guides/final-walkthrough-checklist');
+                            }}
+                            className="text-xs bg-green-100 hover:bg-green-200 text-green-700 px-3 py-1.5 rounded-full font-medium transition-all duration-200 flex items-center space-x-1"
+                          >
+                            <span>✅</span>
+                            <span>Walkthrough Checklist</span>
+                          </button>
+                        </div>
+                      )}
+                      
+                      {/* Special link for attend-inspection item */}
+                      {item.id === 'attend-inspection' && (
+                        <div className="mt-2">
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              router.push('/guides/home-inspection-questions');
+                            }}
+                            className="text-xs bg-orange-100 hover:bg-orange-200 text-orange-700 px-3 py-1.5 rounded-full font-medium transition-all duration-200 flex items-center space-x-1"
+                          >
+                            <span>👁️</span>
+                            <span>Inspection Questions Guide</span>
+                          </button>
+                        </div>
+                      )}
+                      
                       <div className="flex items-center space-x-2 mt-2">
-                        {item.required && (
-                          <span className="text-xs bg-red-100 text-red-700 px-2 py-1 rounded-full font-bold">
-                            REQUIRED
-                          </span>
-                        )}
                         {item.estimatedTime && (
                           <span className="text-xs text-gray-500">
                             {item.estimatedTime}
@@ -504,24 +703,47 @@ export default function StepDetailPage() {
         <div className="duolingo-card">
           <div className="text-center">
             {!isCompleted ? (
-              <button 
-                onClick={handleCompleteStep}
-                disabled={!stepReadyForCompletion}
-                className={`
-                  duolingo-button text-lg px-8 py-3 mb-4
-                  ${!stepReadyForCompletion ? 'opacity-50 cursor-not-allowed' : ''}
-                `}
-              >
-                {!stepReadyForCompletion 
-                  ? (checklistProgress < 100 
-                      ? 'Complete Checklist First' 
-                      : hasRequiredCalculators && !calculatorsComplete 
-                        ? 'Complete Required Calculators' 
-                        : 'Complete Requirements First'
-                    )
-                  : 'Complete Step 🎉'
-                }
-              </button>
+              <>
+                <button 
+                  onClick={handleCompleteStep}
+                  disabled={!stepReadyForCompletion}
+                  className={`
+                    duolingo-button text-lg px-8 py-3 mb-4
+                    ${!stepReadyForCompletion ? 'opacity-50 cursor-not-allowed' : ''}
+                  `}
+                >
+                  {!stepReadyForCompletion 
+                    ? (checklistProgress < 100 
+                        ? 'Complete Checklist First' 
+                        : hasRequiredCalculators && !calculatorsComplete 
+                          ? 'Complete Required Calculators' 
+                          : 'Complete Requirements First'
+                      )
+                    : 'Complete Step 🎉'
+                  }
+                </button>
+                
+                {/* Next Phase Information */}
+                {stepReadyForCompletion && nextPhaseInfo && (
+                  <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                    <div className="flex items-center justify-center mb-2">
+                      <span className="text-2xl mr-2">{nextPhaseInfo.phase.icon}</span>
+                      <h4 className="font-semibold text-blue-900">Next: {nextPhaseInfo.phase.title}</h4>
+                    </div>
+                    <p className="text-sm text-blue-700 mb-2">{nextPhaseInfo.phase.description}</p>
+                    <div className="flex items-center justify-center space-x-4 text-xs text-blue-600">
+                      <span className="flex items-center">
+                        <span className="mr-1">⏱️</span>
+                        {nextPhaseInfo.phase.estimatedDuration}
+                      </span>
+                      <span className="flex items-center">
+                        <span className="mr-1">📋</span>
+                        {nextPhaseInfo.phase.steps.length} steps
+                      </span>
+                    </div>
+                  </div>
+                )}
+              </>
             ) : (
               <div className="text-center mb-4">
                 <div className="text-4xl mb-2">🎉</div>

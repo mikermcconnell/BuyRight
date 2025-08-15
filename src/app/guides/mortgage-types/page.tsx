@@ -57,7 +57,7 @@ export default function MortgageTypesGuide() {
                 🏠 Fixed-Rate vs Variable-Rate Mortgages
               </h2>
               
-              <div className="grid md:grid-cols-2 gap-6 mb-6">
+              <div className="space-y-6 gap-6 mb-6">
                 <div className="border border-gray-200 rounded-lg p-6">
                   <h3 className="text-xl font-bold text-green-900 mb-3">Fixed-Rate Mortgages</h3>
                   <p className="text-gray-700 mb-4">Your interest rate stays the same for the entire {isCanada ? 'term' : 'loan period'}.</p>
@@ -125,7 +125,7 @@ export default function MortgageTypesGuide() {
                   <div className="space-y-6">
                     <div className="border border-red-200 rounded-lg p-6 bg-red-50">
                       <h3 className="text-xl font-bold text-red-900 mb-3">CMHC Insurance (Required for &lt;20% Down Payment)</h3>
-                      <div className="grid md:grid-cols-2 gap-4 mb-4">
+                      <div className="space-y-6 gap-4 mb-4">
                         <div><strong>When required:</strong> Down payment less than 20%</div>
                         <div><strong>Cost:</strong> 0.6% - 4.5% of mortgage amount</div>
                       </div>
@@ -162,7 +162,7 @@ export default function MortgageTypesGuide() {
 
                     <div className="border border-gray-200 rounded-lg p-6">
                       <h3 className="text-xl font-bold text-gray-900 mb-3">Canadian Mortgage Key Terms</h3>
-                      <div className="grid md:grid-cols-2 gap-4">
+                      <div className="space-y-6 gap-4">
                         <div>
                           <strong>Amortization Period:</strong> Total time to pay off mortgage (usually 25-30 years)
                         </div>
@@ -206,12 +206,12 @@ export default function MortgageTypesGuide() {
                   <div className="space-y-6">
                     <div className="border border-blue-200 rounded-lg p-6">
                       <h3 className="text-xl font-bold text-blue-900 mb-3">FHA Loans (Federal Housing Administration)</h3>
-                      <div className="grid md:grid-cols-3 gap-4 mb-4">
+                      <div className="space-y-4 gap-4 mb-4">
                         <div><strong>Down payment:</strong> As low as 3.5%</div>
                         <div><strong>Credit score:</strong> 580+ (500+ with 10% down)</div>
                         <div><strong>Loan limits:</strong> Vary by county</div>
                       </div>
-                      <div className="grid md:grid-cols-2 gap-4">
+                      <div className="space-y-6 gap-4">
                         <div>
                           <strong className="text-green-700">Pros:</strong>
                           <span className="text-gray-700 ml-2">Lower down payment, flexible credit requirements</span>
@@ -225,12 +225,12 @@ export default function MortgageTypesGuide() {
 
                     <div className="border border-green-200 rounded-lg p-6">
                       <h3 className="text-xl font-bold text-green-900 mb-3">VA Loans (Veterans Affairs)</h3>
-                      <div className="grid md:grid-cols-3 gap-4 mb-4">
+                      <div className="space-y-4 gap-4 mb-4">
                         <div><strong>Down payment:</strong> $0 in most cases</div>
                         <div><strong>Credit score:</strong> No minimum (lender-dependent)</div>
                         <div><strong>Eligibility:</strong> Veterans, active military, surviving spouses</div>
                       </div>
-                      <div className="grid md:grid-cols-2 gap-4">
+                      <div className="space-y-6 gap-4">
                         <div>
                           <strong className="text-green-700">Pros:</strong>
                           <span className="text-gray-700 ml-2">No down payment, no PMI, competitive rates</span>
@@ -244,12 +244,12 @@ export default function MortgageTypesGuide() {
 
                     <div className="border border-yellow-200 rounded-lg p-6">
                       <h3 className="text-xl font-bold text-yellow-900 mb-3">USDA Loans (Rural Development)</h3>
-                      <div className="grid md:grid-cols-3 gap-4 mb-4">
+                      <div className="space-y-4 gap-4 mb-4">
                         <div><strong>Down payment:</strong> $0</div>
                         <div><strong>Credit score:</strong> 640+ typically</div>
                         <div><strong>Location:</strong> USDA-eligible rural areas</div>
                       </div>
-                      <div className="grid md:grid-cols-2 gap-4">
+                      <div className="space-y-6 gap-4">
                         <div>
                           <strong className="text-green-700">Pros:</strong>
                           <span className="text-gray-700 ml-2">No down payment, competitive rates</span>
@@ -265,7 +265,7 @@ export default function MortgageTypesGuide() {
                       <h3 className="text-xl font-bold text-purple-900 mb-3">Conventional Loans</h3>
                       <p className="text-gray-700 mb-4">Not backed by government, offered by private lenders.</p>
                       
-                      <div className="grid md:grid-cols-2 gap-6 mb-4">
+                      <div className="space-y-6 gap-6 mb-4">
                         <div>
                           <strong>Conforming Loans:</strong>
                           <p className="text-sm text-gray-600">Meet Fannie Mae/Freddie Mac guidelines. 2024 limit: $766,550 (higher in expensive areas)</p>

@@ -1,6 +1,14 @@
 // Calculator-Journey Integration Service
 // Manages calculator results persistence and journey integration
 
+interface ClosingCostItem {
+  name: string;
+  amount: number;
+  category: string;
+  percentage?: number;
+  required: boolean;
+}
+
 export interface AffordabilityResult {
   maxHomePrice: number;
   maxMonthlyPayment: number;
@@ -30,10 +38,10 @@ export interface MortgageCalculation {
 
 export interface ClosingCostsResult {
   totalClosingCosts: number;
-  costsByCategory: { [category: string]: any[] };
+  costsByCategory: { [category: string]: ClosingCostItem[] };
   cashNeeded: number;
   percentOfHomePrice: number;
-  breakdown: any[];
+  breakdown: ClosingCostItem[];
   calculatedAt: Date;
 }
 
@@ -112,7 +120,7 @@ export class CalculatorIntegrationService {
         }
         
         if (results.mortgage) {
-          results.mortgage = results.mortgage.map((calc: any) => ({
+          results.mortgage = results.mortgage.map((calc: MortgageCalculation) => ({
             ...calc,
             calculatedAt: new Date(calc.calculatedAt)
           }));

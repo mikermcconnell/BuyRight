@@ -5,13 +5,15 @@ import { useRouter } from 'next/navigation';
 import { useJourney, useJourneyProgress } from '@/contexts/JourneyContext';
 import { CalculatorIntegrationService } from '@/lib/calculatorIntegration';
 import CalculatorWidget from '@/components/journey/CalculatorWidget';
+import { UserProfile, DashboardInsights } from '@/types/profile';
+import { journeyLogger, logError, logInfo } from '@/lib/logger';
 
 export default function Dashboard() {
   const router = useRouter();
-  const [profile, setProfile] = useState(null);
+  const [profile, setProfile] = useState<UserProfile | null>(null);
   const [initialLoading, setInitialLoading] = useState(true);
   const [showResetConfirm, setShowResetConfirm] = useState(false);
-  const [calculatorInsights, setCalculatorInsights] = useState<any>(null);
+  const [calculatorInsights, setCalculatorInsights] = useState<DashboardInsights | null>(null);
   
   // Use journey context
   const { 
@@ -133,22 +135,23 @@ export default function Dashboard() {
             <div className="flex space-x-3">
               <button 
                 onClick={async () => {
-                  console.log('🔓 Unlock button clicked');
+                  journeyLogger.info('Unlock all steps button clicked');
                   await unlockAllSteps();
                   
                   // Quick verification after a short delay
                   setTimeout(() => {
-                    console.log('=== UNLOCK VERIFICATION FROM DASHBOARD ===');
                     const testSteps = phases.flatMap(p => p.steps).slice(0, 5);
-                    testSteps.forEach(step => {
-                      const available = isStepAvailable(step.id);
-                      const completed = isStepCompleted(step.id);
-                      console.log(`${step.id}: available=${available}, completed=${completed}`);
-                    });
+                    const stepStatus = testSteps.map(step => ({
+                      stepId: step.id,
+                      available: isStepAvailable(step.id),
+                      completed: isStepCompleted(step.id)
+                    }));
+                    journeyLogger.info('Steps unlocked - verification', { stepStatus });
                   }, 200);
                 }}
                 className="px-4 py-2 text-sm bg-green-100 hover:bg-green-200 text-green-700 rounded-lg font-medium transition-all duration-200 flex items-center space-x-2"
                 title="Unlock all journey steps for demo/testing"
+                aria-label="Unlock all journey steps for demo and testing purposes"
               >
                 <span>🔓</span>
                 <span>Unlock All Steps</span>
@@ -158,6 +161,7 @@ export default function Dashboard() {
                 onClick={() => setShowResetConfirm(true)}
                 className="px-4 py-2 text-sm bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg font-medium transition-all duration-200 flex items-center space-x-2"
                 title="Reset all progress"
+                aria-label="Reset all journey progress and start over"
               >
                 <span>🔄</span>
                 <span>Reset Progress</span>
@@ -287,6 +291,7 @@ export default function Dashboard() {
               <button 
                 onClick={() => router.push('/calculators')}
                 className="px-6 py-2 bg-green-100 hover:bg-green-200 text-green-700 rounded-lg font-medium transition-all duration-200"
+                aria-label="Go to calculators page to update your financial calculations"
               >
                 Update Calculations →
               </button>
@@ -306,6 +311,7 @@ export default function Dashboard() {
               <button 
                 onClick={() => router.push('/calculators/affordability')}
                 className="duolingo-button"
+                aria-label="Start affordability calculator to determine your home buying budget"
               >
                 Calculate Affordability 🚀
               </button>
@@ -329,7 +335,14 @@ export default function Dashboard() {
                   {Math.round(progressPercentage)}%
                 </span>
               </div>
-              <div className="w-full h-4 bg-gray-200 rounded-full overflow-hidden">
+              <div 
+                className="w-full h-4 bg-gray-200 rounded-full overflow-hidden"
+                role="progressbar"
+                aria-valuenow={Math.round(progressPercentage)}
+                aria-valuemin={0}
+                aria-valuemax={100}
+                aria-label={`Journey progress: ${Math.round(progressPercentage)}% complete`}
+              >
                 <div 
                   className="h-full rounded-full transition-all duration-1000 ease-out"
                   style={{ 
@@ -365,6 +378,15 @@ export default function Dashboard() {
                     `}
                     onClick={() => {
                       if (isAvailable || isCompleted || isCurrent) {
+                        router.push(`/journey/${step.phase.id}/${step.id}`);
+                      }
+                    }}
+                    role="button"
+                    tabIndex={isAvailable || isCompleted || isCurrent ? 0 : -1}
+                    aria-label={`${step.title} - ${isCompleted ? 'Completed' : isCurrent ? 'Current step' : isAvailable ? 'Available to start' : 'Locked'} - ${step.description}`}
+                    onKeyDown={(e) => {
+                      if ((e.key === 'Enter' || e.key === ' ') && (isAvailable || isCompleted || isCurrent)) {
+                        e.preventDefault();
                         router.push(`/journey/${step.phase.id}/${step.id}`);
                       }
                     }}
@@ -473,28 +495,36 @@ export default function Dashboard() {
         
         {/* Reset Confirmation Modal */}
         {showResetConfirm && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <div 
+            className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="reset-modal-title"
+            aria-describedby="reset-modal-description"
+          >
             <div className="bg-white rounded-xl p-6 max-w-md w-full mx-4 shadow-2xl">
               <div className="text-center">
                 <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
                   <span className="text-red-600 text-2xl">⚠️</span>
                 </div>
-                <h3 className="text-xl font-bold text-gray-800 mb-2">
+                <h3 id="reset-modal-title" className="text-xl font-bold text-gray-800 mb-2">
                   Reset All Progress?
                 </h3>
-                <p className="text-gray-600 mb-6">
+                <p id="reset-modal-description" className="text-gray-600 mb-6">
                   This will permanently delete all your progress and completed steps. You&apos;ll start from the beginning of your home buying journey.
                 </p>
                 <div className="flex space-x-3">
                   <button 
                     onClick={() => setShowResetConfirm(false)}
                     className="flex-1 px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg font-medium transition-all duration-200"
+                    aria-label="Cancel reset operation and keep current progress"
                   >
                     Cancel
                   </button>
                   <button 
                     onClick={handleResetProgress}
                     className="flex-1 px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg font-medium transition-all duration-200"
+                    aria-label="Confirm reset and permanently delete all progress"
                   >
                     Reset Progress
                   </button>

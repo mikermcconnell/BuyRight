@@ -4,9 +4,9 @@
   "description": "Mobile-first home buying guide with regional customization",
   "private": true,
   "scripts": {
-    "dev": "next dev --turbo",
-    "dev:fast": "next dev --turbo --port 3000",
-    "dev:clean": "rm -rf .next && next dev --turbo",
+    "dev": "next dev --turbo --port 3010",
+    "dev:fast": "next dev --turbo --port 3010",
+    "dev:clean": "rm -rf .next && next dev --turbo --port 3010",
     "build": "next build",
     "start": "next start",
     "lint": "next lint",

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { useRegional } from '@/contexts/RegionalContext';
 import { CalculatorIntegrationService } from '@/lib/calculatorIntegration';
@@ -57,7 +57,7 @@ interface AffordabilityCalculatorProps {
   showSaveOption?: boolean;
 }
 
-export default function AffordabilityCalculator({
+const AffordabilityCalculator = React.memo(function AffordabilityCalculator({
   onResultChange,
   showSaveOption = false,
 }: AffordabilityCalculatorProps) {
@@ -1203,4 +1203,6 @@ export default function AffordabilityCalculator({
       </div>
     </div>
   );
-}
+});
+
+export default AffordabilityCalculator;

@@ -4,6 +4,7 @@ import React from 'react';
 import Header from '@/components/navigation/Header';
 import MobileNavigation from '@/components/navigation/MobileNavigation';
 import AffordabilityCalculator from '@/components/calculators/AffordabilityCalculator';
+import CalculatorErrorBoundary from '@/components/calculators/CalculatorErrorBoundary';
 
 export default function AffordabilityCalculatorPage() {
   // Demo mode - always show save option since we're using localStorage
@@ -14,7 +15,9 @@ export default function AffordabilityCalculatorPage() {
       <Header title="Affordability Calculator" showBackButton />
       
       <div className="max-w-6xl mx-auto px-4 py-6">
-        <AffordabilityCalculator showSaveOption={showSaveOption} />
+        <CalculatorErrorBoundary calculatorName="Affordability">
+          <AffordabilityCalculator showSaveOption={showSaveOption} />
+        </CalculatorErrorBoundary>
       </div>
 
       <MobileNavigation />

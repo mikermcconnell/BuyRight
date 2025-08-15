@@ -66,7 +66,7 @@ export default function FirstTimeBuyerProgramsGuide() {
                     <div className="space-y-6">
                       <div className="border border-green-200 rounded-lg p-6 bg-green-50">
                         <h4 className="text-lg font-bold text-green-900 mb-3">First-Time Home Buyer Incentive (FTHBI)</h4>
-                        <div className="grid md:grid-cols-2 gap-4 mb-4">
+                        <div className="space-y-6 gap-4 mb-4">
                           <div>
                             <strong>What it is:</strong> Shared equity mortgage with Government of Canada
                           </div>
@@ -87,7 +87,7 @@ export default function FirstTimeBuyerProgramsGuide() {
 
                       <div className="border border-blue-200 rounded-lg p-6 bg-blue-50">
                         <h4 className="text-lg font-bold text-blue-900 mb-3">Home Buyers' Plan (HBP)</h4>
-                        <div className="grid md:grid-cols-2 gap-4 mb-4">
+                        <div className="space-y-6 gap-4 mb-4">
                           <div>
                             <strong>What it is:</strong> Withdraw from your RRSP tax-free for down payment
                           </div>
@@ -108,7 +108,7 @@ export default function FirstTimeBuyerProgramsGuide() {
 
                       <div className="border border-purple-200 rounded-lg p-6 bg-purple-50">
                         <h4 className="text-lg font-bold text-purple-900 mb-3">First-Time Home Buyer Tax Credit</h4>
-                        <div className="grid md:grid-cols-2 gap-4 mb-4">
+                        <div className="space-y-6 gap-4 mb-4">
                           <div>
                             <strong>What it is:</strong> Non-refundable tax credit
                           </div>
@@ -134,7 +134,7 @@ export default function FirstTimeBuyerProgramsGuide() {
                       <div className="space-y-6">
                         <div className="border border-orange-200 rounded-lg p-6 bg-orange-50">
                           <h4 className="text-lg font-bold text-orange-900 mb-3">Land Transfer Tax Rebate for First-Time Buyers</h4>
-                          <div className="grid md:grid-cols-2 gap-4 mb-4">
+                          <div className="space-y-6 gap-4 mb-4">
                             <div>
                               <strong>Amount:</strong> Up to $4,000 rebate
                             </div>
@@ -155,7 +155,7 @@ export default function FirstTimeBuyerProgramsGuide() {
 
                         <div className="border border-teal-200 rounded-lg p-6 bg-teal-50">
                           <h4 className="text-lg font-bold text-teal-900 mb-3">Ontario Renovates Program</h4>
-                          <div className="grid md:grid-cols-2 gap-4 mb-4">
+                          <div className="space-y-6 gap-4 mb-4">
                             <div>
                               <strong>What it is:</strong> Forgivable loan for home repairs/accessibility
                             </div>
@@ -182,7 +182,7 @@ export default function FirstTimeBuyerProgramsGuide() {
                       <div className="space-y-6">
                         <div className="border border-green-200 rounded-lg p-6 bg-green-50">
                           <h4 className="text-lg font-bold text-green-900 mb-3">First Time Home Buyers Program (Property Transfer Tax Exemption)</h4>
-                          <div className="grid md:grid-cols-2 gap-4 mb-4">
+                          <div className="space-y-6 gap-4 mb-4">
                             <div>
                               <strong>Full exemption:</strong> Homes up to $500,000
                             </div>
@@ -203,7 +203,7 @@ export default function FirstTimeBuyerProgramsGuide() {
 
                         <div className="border border-purple-200 rounded-lg p-6 bg-purple-50">
                           <h4 className="text-lg font-bold text-purple-900 mb-3">BC Home Owner Mortgage and Equity (HOME) Partnership</h4>
-                          <div className="grid md:grid-cols-2 gap-4 mb-4">
+                          <div className="space-y-6 gap-4 mb-4">
                             <div>
                               <strong>What it is:</strong> Loan for up to 25% of home's value
                             </div>
@@ -243,7 +243,7 @@ export default function FirstTimeBuyerProgramsGuide() {
                     <div className="space-y-6">
                       <div className="border border-blue-200 rounded-lg p-6 bg-blue-50">
                         <h4 className="text-lg font-bold text-blue-900 mb-3">FHA First-Time Home Buyer Loan</h4>
-                        <div className="grid md:grid-cols-2 gap-4 mb-4">
+                        <div className="space-y-6 gap-4 mb-4">
                           <div>
                             <strong>Down payment:</strong> As low as 3.5%
                           </div>
@@ -264,7 +264,7 @@ export default function FirstTimeBuyerProgramsGuide() {
 
                       <div className="border border-green-200 rounded-lg p-6 bg-green-50">
                         <h4 className="text-lg font-bold text-green-900 mb-3">VA Loans (Veterans)</h4>
-                        <div className="grid md:grid-cols-2 gap-4 mb-4">
+                        <div className="space-y-6 gap-4 mb-4">
                           <div>
                             <strong>Down payment:</strong> $0 in most cases
                           </div>
@@ -282,7 +282,7 @@ export default function FirstTimeBuyerProgramsGuide() {
 
                       <div className="border border-yellow-200 rounded-lg p-6 bg-yellow-50">
                         <h4 className="text-lg font-bold text-yellow-900 mb-3">USDA Rural Development Loans</h4>
-                        <div className="grid md:grid-cols-2 gap-4 mb-4">
+                        <div className="space-y-6 gap-4 mb-4">
                           <div>
                             <strong>Down payment:</strong> $0
                           </div>
@@ -303,7 +303,7 @@ export default function FirstTimeBuyerProgramsGuide() {
 
                       <div className="border border-purple-200 rounded-lg p-6 bg-purple-50">
                         <h4 className="text-lg font-bold text-purple-900 mb-3">Good Neighbor Next Door</h4>
-                        <div className="grid md:grid-cols-2 gap-4 mb-4">
+                        <div className="space-y-6 gap-4 mb-4">
                           <div>
                             <strong>Discount:</strong> 50% off list price
                           </div>
@@ -321,7 +321,7 @@ export default function FirstTimeBuyerProgramsGuide() {
 
                       <div className="border border-indigo-200 rounded-lg p-6 bg-indigo-50">
                         <h4 className="text-lg font-bold text-indigo-900 mb-3">IRA First-Time Home Buyer Withdrawal</h4>
-                        <div className="grid md:grid-cols-2 gap-4 mb-4">
+                        <div className="space-y-6 gap-4 mb-4">
                           <div>
                             <strong>Amount:</strong> Up to $10,000 per person
                           </div>
@@ -345,7 +345,7 @@ export default function FirstTimeBuyerProgramsGuide() {
                     
                     <div className="bg-blue-50 border border-blue-200 rounded-lg p-6 mb-6">
                       <h4 className="text-lg font-bold text-blue-900 mb-3">Common State Program Types</h4>
-                      <div className="grid md:grid-cols-2 gap-4">
+                      <div className="space-y-6 gap-4">
                         <div>
                           <strong>Down Payment Assistance:</strong> Grants or low-interest loans for down payment and closing costs
                         </div>
@@ -384,7 +384,7 @@ export default function FirstTimeBuyerProgramsGuide() {
                 📋 Application Tips & Requirements
               </h2>
 
-              <div className="grid md:grid-cols-2 gap-6">
+              <div className="space-y-6 gap-6">
                 <div className="bg-green-50 border border-green-200 rounded-lg p-6">
                   <h3 className="text-lg font-bold text-green-900 mb-3">✅ Preparation Checklist</h3>
                   <ul className="text-green-800 space-y-2">

@@ -580,12 +580,15 @@ export default function MortgageCalculator({
             <div className="result-card-info blue">
               <button
                 onClick={() => setShowAmortizationChart(!showAmortizationChart)}
-                className="w-full flex justify-between items-center focus:outline-none"
+                className="w-full flex justify-between items-center focus:outline-none hover:bg-blue-50 p-4 -m-4 rounded-lg transition-colors duration-200 group"
               >
-                <h4 className="font-semibold text-blue-900">💰 Loan Overview</h4>
-                <span className="text-blue-600 text-sm">
-                  {showAmortizationChart ? '▼ Hide Details' : '▶ Show Payment Breakdown'}
-                </span>
+                <h4 className="font-semibold text-blue-900 group-hover:text-blue-800">💰 Loan Overview</h4>
+                <div className="flex items-center space-x-2">
+                  <span className="px-3 py-1.5 text-sm font-medium text-white rounded-full shadow-sm transition-all duration-200 group-hover:shadow-md"
+                        style={{ backgroundColor: 'var(--duolingo-green)' }}>
+                    {showAmortizationChart ? '▼ Hide Details' : '▶ Show Payment Breakdown'}
+                  </span>
+                </div>
               </button>
               
               <div className="space-y-3 mt-4">

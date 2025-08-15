@@ -45,8 +45,10 @@ function LoginForm() {
 
     try {
       const result = await signIn(data.email, data.password);
+      console.log('Login result:', result);
 
       if (result.success) {
+        console.log('Redirecting to:', result.nextStep || redirectTo);
         // Redirect to the intended page or dashboard
         router.push(result.nextStep || redirectTo);
       } else {

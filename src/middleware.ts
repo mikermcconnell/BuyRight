@@ -6,7 +6,7 @@ import type { Database } from '@/lib/supabase'
 // Define routes that require authentication
 const protectedRoutes = [
   '/dashboard',
-  '/onboarding',
+  '/onboarding', 
   '/calculators',
   '/journey',
   '/guides',
@@ -30,11 +30,21 @@ const publicRoutes = [
 export async function middleware(req: NextRequest) {
   const res = NextResponse.next()
   
+  console.log('🚀 MIDDLEWARE ENTRY:', req.nextUrl.pathname)
+  
   // Check if Supabase is configured
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
   
+  console.log('🔧 SUPABASE CONFIG CHECK:', {
+    hasUrl: !!supabaseUrl,
+    hasKey: !!supabaseAnonKey,
+    urlStartsWith: supabaseUrl?.startsWith('https://') ? 'https' : supabaseUrl?.substring(0, 10),
+    keyLength: supabaseAnonKey?.length || 0
+  })
+  
   if (!supabaseUrl || !supabaseAnonKey) {
+    console.log('❌ MIDDLEWARE: Supabase not configured - allowing request')
     // In demo mode, allow all requests to proceed
     return res;
   }
@@ -45,9 +55,12 @@ export async function middleware(req: NextRequest) {
     {
       cookies: {
         get(name: string) {
-          return req.cookies.get(name)?.value
+          const cookie = req.cookies.get(name)?.value
+          console.log(`🍪 Getting cookie ${name}:`, cookie ? 'present' : 'missing')
+          return cookie
         },
         set(name: string, value: string, options: any) {
+          console.log(`🍪 Setting cookie ${name}`)
           req.cookies.set({
             name,
             value,
@@ -60,6 +73,7 @@ export async function middleware(req: NextRequest) {
           })
         },
         remove(name: string, options: any) {
+          console.log(`🍪 Removing cookie ${name}`)
           req.cookies.set({
             name,
             value: '',
@@ -89,22 +103,55 @@ export async function middleware(req: NextRequest) {
   }
 
   try {
-    // Get the current session
+    // Get the current session and refresh if needed
     const {
       data: { session },
       error,
     } = await supabase.auth.getSession()
 
+    console.log('🔍 MIDDLEWARE SESSION CHECK:', { 
+      path, 
+      hasError: !!error, 
+      errorMessage: error?.message,
+      hasSession: !!session, 
+      hasUser: !!session?.user,
+      userId: session?.user?.id,
+      sessionExpiry: session?.expires_at,
+      accessToken: session?.access_token ? 'present' : 'missing'
+    })
+
     if (error) {
-      console.error('Middleware auth error:', error)
+      console.error('❌ Middleware auth error:', error)
       // On auth error, allow the request but let the component handle it
       return res
+    }
+
+    // Check if session is expired and needs refresh
+    if (session && session.expires_at) {
+      const expiryTime = new Date(session.expires_at * 1000)
+      const now = new Date()
+      const timeUntilExpiry = expiryTime.getTime() - now.getTime()
+      
+      console.log('🕐 SESSION EXPIRY CHECK:', {
+        expiryTime: expiryTime.toISOString(),
+        now: now.toISOString(),
+        timeUntilExpiryMinutes: Math.round(timeUntilExpiry / (1000 * 60)),
+        isExpired: timeUntilExpiry <= 0
+      })
     }
 
     const isAuthenticated = !!session?.user
     const isProtectedRoute = protectedRoutes.some(route => path.startsWith(route))
     const isAuthRoute = authRoutes.some(route => path.startsWith(route))
     const isPublicRoute = publicRoutes.includes(path) || path === '/'
+
+    console.log('🔍 MIDDLEWARE DECISIONS:', { 
+      path, 
+      isAuthenticated, 
+      isProtectedRoute, 
+      isAuthRoute, 
+      isPublicRoute 
+    })
 
     // Handle protected routes
     if (isProtectedRoute && !isAuthenticated) {

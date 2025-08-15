@@ -205,8 +205,8 @@ export interface Database {
 // Helper to check if Supabase is properly configured
 export const isSupabaseAvailable = () => isSupabaseConfigured;
 
-// Client-side Supabase client for browser
-export const supabaseClient = createClient<Database>(supabaseUrl, supabaseAnonKey);
+// Client-side Supabase client for browser with cookie storage
+export const supabaseClient = createBrowserClient<Database>(supabaseUrl, supabaseAnonKey);
 
 // Client component client
 export function createSupabaseClientComponentClient() {

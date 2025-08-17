@@ -14,8 +14,8 @@ export const baseJourneyTemplate: JourneyTemplate = {
   basePhases: [
     {
       id: 'pre-approval',
-      title: 'Getting Pre-approved',
-      description: 'Secure financing and understand your buying power',
+      title: 'Figure Out Your Budget',
+      description: 'Find out how much you can spend on your dream home',
       order: 1,
       estimatedDuration: '1-2 weeks',
       icon: '💰',
@@ -23,8 +23,8 @@ export const baseJourneyTemplate: JourneyTemplate = {
         {
           id: 'research-lenders',
           phaseId: 'pre-approval',
-          title: 'Research Mortgage Lenders',
-          description: 'Compare different lenders and mortgage options',
+          title: 'Find the Right Bank for You',
+          description: 'Shop around for the best home loan deals',
           order: 1,
           category: 'financing',
           estimatedDuration: '2-3 days',
@@ -33,30 +33,34 @@ export const baseJourneyTemplate: JourneyTemplate = {
           checklist: [
             {
               id: 'understand-mortgage-types',
-              title: 'Understand different mortgage types (fixed, variable)',
-              description: 'Learn about fixed-rate, variable-rate, and government-backed mortgage options.',
+              title: 'Learn about different home loan types',
+              description: 'Simple breakdown: fixed rate (payment stays the same) vs variable rate (payment can change).',
               category: 'research',
-              estimatedTime: '15-20 minutes'
+              estimatedTime: '15-20 minutes',
+              required: true
             },
             {
               id: 'compare-rates',
-              title: 'Compare interest rates from multiple lenders',
-              description: 'Get quotes from at least 3 different lenders to find the best rates and terms.',
-              category: 'research'
+              title: 'Compare rates from 3 different banks',
+              description: 'Shop around! Different banks offer different deals - it pays to compare.',
+              category: 'research',
+              required: true
             },
             {
               id: 'check-first-time-programs',
-              title: 'Check for first-time buyer programs',
-              description: 'Research available government programs and incentives that can reduce your costs.',
+              title: 'Look for first-time buyer perks',
+              description: 'Many places offer special deals and discounts for first-time buyers - find yours!',
               category: 'research',
-              estimatedTime: '20-30 minutes'
+              estimatedTime: '20-30 minutes',
+              required: true
             },
             {
               id: 'use-mortgage-calculator',
               title: 'Use mortgage calculator to explore scenarios',
               description: 'Practice with different loan amounts, rates, and terms to understand payment impacts.',
               category: 'planning',
-              estimatedTime: '10-15 minutes'
+              estimatedTime: '10-15 minutes',
+              required: true
             }
           ],
           tips: [
@@ -82,26 +86,30 @@ export const baseJourneyTemplate: JourneyTemplate = {
               title: 'Select preferred mortgage provider',
               description: 'Choose your final lender based on rates, service, and terms from your research.',
               category: 'decision',
-              estimatedTime: '30 minutes'
+              estimatedTime: '30 minutes',
+              required: true
             },
             {
               id: 'gather-documents',
               title: 'Gather required documents (income, assets, debt)',
               description: 'Collect all documentation needed for pre-approval application.',
               category: 'document',
-              estimatedTime: '2-3 hours'
+              estimatedTime: '2-3 hours',
+              required: true
             },
             {
               id: 'submit-application',
               title: 'Submit pre-approval application and documentation',
               description: 'Complete and submit your mortgage pre-approval application with all supporting documents.',
               category: 'action',
-              estimatedTime: '1-2 hours'
+              estimatedTime: '1-2 hours',
+              required: true
             },
             {
               id: 'receive-preapproval',
               title: 'Receive pre-approval letter',
-              category: 'action'
+              category: 'action',
+              required: true
             }
           ],
           tips: [
@@ -139,19 +147,22 @@ export const baseJourneyTemplate: JourneyTemplate = {
               title: 'Check agent references and reviews',
               description: 'Research potential agents online and check their reviews, credentials, and past client feedback.',
               category: 'research',
-              estimatedTime: '1-2 hours'
+              estimatedTime: '1-2 hours',
+              required: true
             },
             {
               id: 'reach-out-to-agents',
               title: 'Reach out to agents',
               description: 'Connect with potential real estate agents to find the right fit for your needs.',
               category: 'action',
-              estimatedTime: '1-2 hours'
+              estimatedTime: '1-2 hours',
+              required: true
             },
             {
               id: 'sign-buyer-agreement',
               title: 'Sign buyer representation agreement',
-              category: 'action'
+              category: 'action',
+              required: true
             }
           ],
           tips: [
@@ -176,28 +187,32 @@ export const baseJourneyTemplate: JourneyTemplate = {
               title: 'Define your must-haves vs. nice-to-haves',
               description: 'Create a clear list of property requirements and preferences.',
               category: 'decision',
-              estimatedTime: '1-2 hours'
+              estimatedTime: '1-2 hours',
+              required: true
             },
             {
               id: 'diy-market-research',
               title: 'Research market conditions yourself',
               description: 'Research the market yourself to understand trends, pricing, and available inventory.',
               category: 'research',
-              estimatedTime: '2-3 hours'
+              estimatedTime: '2-3 hours',
+              required: true
             },
             {
               id: 'reach-out-agent-criteria',
               title: 'Reach out to agent with your criteria',
               description: 'Share your property requirements with your agent and request matching listings.',
               category: 'action',
-              estimatedTime: '30 minutes'
+              estimatedTime: '30 minutes',
+              required: true
             },
             {
               id: 'tour-homes',
               title: 'Tour potential homes',
               description: 'Schedule and attend home viewings with your agent, or visit open houses on your own.',
               category: 'action',
-              estimatedTime: 'Ongoing'
+              estimatedTime: 'Ongoing',
+              required: true
             }
           ],
           tips: [
@@ -230,7 +245,8 @@ export const baseJourneyTemplate: JourneyTemplate = {
             {
               id: 'review-comps',
               title: 'Review comparable sales with your agent',
-              category: 'research'
+              category: 'research',
+              required: true
             },
             {
               id: 'assess-property-value',
@@ -238,7 +254,8 @@ export const baseJourneyTemplate: JourneyTemplate = {
               description: 'Determine fair market value using multiple valuation methods and data sources.',
               category: 'research',
               estimatedTime: '2-3 hours',
-              guideLink: '/guides/property-value-assessment'
+              guideLink: '/guides/property-value-assessment',
+              required: true
             }
           ],
           tips: [
@@ -264,7 +281,8 @@ export const baseJourneyTemplate: JourneyTemplate = {
               description: 'Work with your agent to determine competitive pricing and negotiation approach.',
               category: 'decision',
               estimatedTime: '45-60 minutes',
-              guideLink: '/guides/offer-negotiation-strategy'
+              guideLink: '/guides/offer-negotiation-strategy',
+              required: true
             },
             {
               id: 'include-conditions',
@@ -272,7 +290,8 @@ export const baseJourneyTemplate: JourneyTemplate = {
               description: 'Choose the right conditions to protect yourself while staying competitive.',
               category: 'action',
               estimatedTime: '30-45 minutes',
-              guideLink: '/guides/offer-conditions'
+              guideLink: '/guides/offer-conditions',
+              required: true
             },
             {
               id: 'submit-offer',
@@ -280,7 +299,8 @@ export const baseJourneyTemplate: JourneyTemplate = {
               description: 'Understand the timeline - things move quickly in real estate offers.',
               category: 'action',
               estimatedTime: '30 minutes',
-              guideLink: '/guides/offer-submission-timeline'
+              guideLink: '/guides/offer-submission-timeline',
+              required: true
             }
           ],
           tips: [
@@ -314,7 +334,8 @@ export const baseJourneyTemplate: JourneyTemplate = {
             {
               id: 'hire-inspector',
               title: 'Hire qualified home inspector',
-              category: 'action'
+              category: 'action',
+              required: true
             },
             {
               id: 'attend-inspection',
@@ -322,12 +343,14 @@ export const baseJourneyTemplate: JourneyTemplate = {
               description: 'Learn what questions to ask during the home inspection.',
               category: 'action',
               estimatedTime: '2-3 hours',
-              guideLink: '/guides/home-inspection-questions'
+              guideLink: '/guides/home-inspection-questions',
+              required: true
             },
             {
               id: 'review-report',
               title: 'Review inspection report with agent',
-              category: 'action'
+              category: 'action',
+              required: true
             },
             {
               id: 'negotiate-repairs',
@@ -341,7 +364,8 @@ export const baseJourneyTemplate: JourneyTemplate = {
                 'Decide between asking for repairs, credits, or price reduction',
                 'Submit repair request or negotiation to seller',
                 'Be prepared to compromise on minor issues'
-              ]
+              ],
+              required: true
             }
           ],
           tips: [
@@ -373,7 +397,8 @@ export const baseJourneyTemplate: JourneyTemplate = {
                 'Declare all assets, debts, and income sources',
                 'Sign authorization for credit and employment verification',
                 'Review application for accuracy before submission'
-              ]
+              ],
+              required: true
             },
             {
               id: 'order-appraisal',
@@ -388,6 +413,7 @@ export const baseJourneyTemplate: JourneyTemplate = {
                 'Loan amount cannot exceed appraised value',
                 'You may need to renegotiate if appraisal comes in low'
               ],
+              required: true
             },
             {
               id: 'underwriting-approval',
@@ -402,6 +428,7 @@ export const baseJourneyTemplate: JourneyTemplate = {
                 'Receives \'clear to close\' or conditional approval',
                 'Final approval confirms loan terms and closing date'
               ],
+              required: true
             },
             {
               id: 'lock-interest-rate',
@@ -415,7 +442,8 @@ export const baseJourneyTemplate: JourneyTemplate = {
                 'Get rate lock confirmation in writing',
                 'Monitor rate lock expiration date',
                 'Extend rate lock if closing is delayed (may cost extra)'
-              ]
+              ],
+              required: true
             }
           ],
           tips: [
@@ -441,12 +469,14 @@ export const baseJourneyTemplate: JourneyTemplate = {
             {
               id: 'schedule-walkthrough',
               title: 'Schedule walkthrough 24-48 hours before closing',
-              category: 'action'
+              category: 'action',
+              required: true
             },
             {
               id: 'check-repairs',
               title: 'Verify agreed-upon repairs were completed',
-              category: 'action'
+              category: 'action',
+              required: true
             },
             {
               id: 'test-utilities',
@@ -454,7 +484,8 @@ export const baseJourneyTemplate: JourneyTemplate = {
               description: 'Use our walkthrough checklist to test all utilities and systems.',
               category: 'action',
               estimatedTime: '45-60 minutes',
-              guideLink: '/guides/final-walkthrough-checklist'
+              guideLink: '/guides/final-walkthrough-checklist',
+              required: true
             }
           ],
           tips: [
@@ -477,22 +508,26 @@ export const baseJourneyTemplate: JourneyTemplate = {
             {
               id: 'review-closing-disclosure',
               title: 'Review Closing Disclosure form',
-              category: 'document'
+              category: 'document',
+              required: true
             },
             {
               id: 'bring-certified-funds',
               title: 'Bring certified funds for closing costs',
-              category: 'action'
+              category: 'action',
+              required: true
             },
             {
               id: 'sign-documents',
               title: 'Sign all closing documents',
-              category: 'action'
+              category: 'action',
+              required: true
             },
             {
               id: 'receive-keys',
               title: 'Receive keys and congratulations!',
-              category: 'action'
+              category: 'action',
+              required: true
             }
           ],
           tips: [
@@ -534,7 +569,8 @@ export const baseJourneyTemplate: JourneyTemplate = {
             {
               id: 'check-exemption',
               title: 'Check if you qualify for first-time buyer exemption',
-              category: 'research'
+              category: 'research',
+              required: true
             }
           ],
           tips: [

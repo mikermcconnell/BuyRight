@@ -302,6 +302,31 @@ export class SupabaseService {
     return data;
   }
 
+  // Helper function to extract phase from step ID safely
+  private extractPhaseFromStepId(stepId: string): string {
+    if (!stepId || typeof stepId !== 'string') {
+      throw new Error('Invalid step ID provided');
+    }
+    
+    const parts = stepId.split('-');
+    if (parts.length < 1) {
+      throw new Error(`Invalid step ID format: ${stepId}. Expected format: 'phase-step'`);
+    }
+    
+    return parts[0];
+  }
+
+  // Helper function to validate step ID format
+  private validateStepId(stepId: string): void {
+    if (!stepId || typeof stepId !== 'string') {
+      throw new Error('Step ID must be a non-empty string');
+    }
+    
+    if (!/^[a-zA-Z0-9_-]+$/.test(stepId)) {
+      throw new Error(`Invalid step ID format: ${stepId}. Only alphanumeric characters, hyphens, and underscores are allowed`);
+    }
+  }
+
   // Journey Progress operations
   async updateJourneyStep(
     userId: string,
@@ -311,6 +336,16 @@ export class SupabaseService {
     notes?: string,
     stepData?: Record<string, any>
   ): Promise<JourneyProgress | null> {
+    // Input validation
+    if (!userId || typeof userId !== 'string') {
+      throw new Error('Invalid user ID provided');
+    }
+    
+    this.validateStepId(stepId);
+    
+    if (!phase || typeof phase !== 'string') {
+      throw new Error('Invalid phase provided');
+    }
     const { data, error } = await this.supabase
       .from('journey_progress')
       .upsert({
@@ -453,12 +488,19 @@ export async function getCurrentUser(supabaseClient: SupabaseClient<Database>): 
   };
 }
 
-// Auth error handling
-export function isSupabaseAuthError(error: any): boolean {
-  return error && typeof error === 'object' && 'message' in error && 'status' in error;
+// Define interface for Supabase auth errors
+interface SupabaseAuthError {
+  message: string;
+  status?: number;
+  statusCode?: number;
 }
 
-export function getSupabaseAuthErrorMessage(error: any): string {
+// Auth error handling
+export function isSupabaseAuthError(error: unknown): error is SupabaseAuthError {
+  return !!(error && typeof error === 'object' && 'message' in error && typeof (error as any).message === 'string');
+}
+
+export function getSupabaseAuthErrorMessage(error: unknown): string {
   if (isSupabaseAuthError(error)) {
     switch (error.message) {
       case 'Invalid login credentials':

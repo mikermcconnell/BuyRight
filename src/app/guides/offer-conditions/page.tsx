@@ -18,6 +18,7 @@ import {
   ScaleIcon,
   EyeIcon
 } from '@heroicons/react/24/outline';
+import BuyRightLogo from '@/components/ui/BuyRightLogo';
 
 export default function OfferConditionsGuide() {
   const router = useRouter();
@@ -355,13 +356,17 @@ export default function OfferConditionsGuide() {
             <span>Back to Journey</span>
           </button>
           
+          {/* BuyRight Branding */}
+          <div className="mb-6">
+            <BuyRightLogo size="lg" className="justify-center" />
+          </div>
+          
           <div className="w-20 h-20 rounded-2xl flex items-center justify-center mx-auto mb-6" style={{ backgroundColor: 'var(--duolingo-green)' }}>
             <ShieldCheckIcon className="w-10 h-10 text-white" />
           </div>
-          <h1 className="duolingo-title mb-4">Offer Conditions Guide</h1>
+          <h1 className="duolingo-title mb-4">🛡️ How to Protect Yourself When Making an Offer</h1>
           <p className="duolingo-subtitle max-w-3xl mx-auto">
-            Learn about different conditions you can include in your offer to protect yourself. 
-            Understand what each one means, when to use them, and their pros and cons.
+            Learn about smart "escape routes" you can build into your offer. These safety nets let you back out or negotiate if things go wrong!
           </p>
         </div>
 

@@ -3,14 +3,14 @@ const nextConfig = {
   // Enable fast refresh and hot reload optimizations
   reactStrictMode: true,
   
-  // Disable TypeScript checking during build for deployment
+  // TypeScript configuration - strict in development, flexible in deployment
   typescript: {
-    ignoreBuildErrors: true,
+    ignoreBuildErrors: process.env.NODE_ENV === 'production' && process.env.VERCEL_ENV === 'production',
   },
   
-  // Disable ESLint checking during build for deployment
+  // ESLint configuration - strict in development, flexible in deployment
   eslint: {
-    ignoreDuringBuilds: true,
+    ignoreDuringBuilds: process.env.NODE_ENV === 'production' && process.env.VERCEL_ENV === 'production',
   },
   
   experimental: {
@@ -63,12 +63,8 @@ const nextConfig = {
   compress: true,
   // Enable SWC minification
   swcMinify: true,
-  // Environment variables for Supabase
-  env: {
-    NEXT_PUBLIC_SUPABASE_URL: process.env.NEXT_PUBLIC_SUPABASE_URL,
-    NEXT_PUBLIC_SUPABASE_ANON_KEY: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
-    NEXT_PUBLIC_GA_MEASUREMENT_ID: process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID,
-  },
+  // Note: NEXT_PUBLIC_ environment variables are automatically exposed by Next.js
+  // No need to explicitly expose them in the env config
 }
 
 module.exports = nextConfig

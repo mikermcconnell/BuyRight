@@ -26,8 +26,9 @@ import { ProgressPersistence } from '@/lib/progressPersistence';
 import { JourneyApi } from '@/lib/progressApi';
 import { useRegional } from './RegionalContext';
 import { useAuth } from './AuthContext';
-import { supabaseService } from '@/lib/supabase';
+import { supabaseService, JourneyProgress } from '@/lib/supabase';
 import { logger } from '@/lib/logger';
+import { JOURNEY_CONSTANTS } from '@/lib/constants';
 
 const journeyLogger = logger.createDomainLogger('journey');
 
@@ -178,16 +179,25 @@ function journeyReducer(state: JourneyContextState, action: JourneyAction): Jour
       };
 
     case 'UPDATE_PROGRESS':
-      console.log('UPDATE_PROGRESS: completed steps before/after:', 
-                  state.userProgress?.completedSteps?.length, '→', action.payload?.completedSteps?.length);
+      journeyLogger.debug('UPDATE_PROGRESS: completed steps before/after', {
+        before: state.userProgress?.completedSteps?.length,
+        after: action.payload?.completedSteps?.length
+      });
       
       // Handle initial userProgress setup (when state.userProgress is null)
       if (!state.userProgress) {
         return {
           ...state,
           userProgress: {
-            ...action.payload,
-            lastUpdated: new Date()
+            userId: action.payload?.userId || 'demo-user',
+            currentPhaseId: action.payload?.currentPhaseId || 'pre-approval',
+            currentStepId: action.payload?.currentStepId || 'research-lenders',
+            completedSteps: action.payload?.completedSteps || [],
+            completedChecklist: action.payload?.completedChecklist || [],
+            stepProgress: action.payload?.stepProgress || {},
+            startedAt: action.payload?.startedAt || new Date(),
+            lastUpdated: new Date(),
+            regionCode: action.payload?.regionCode || 'ON'
           }
         };
       }
@@ -298,7 +308,7 @@ export function JourneyProvider({ children }: JourneyProviderProps) {
       });
 
     } catch (error) {
-      journeyLogger.error('Failed to initialize journey:', error);
+      journeyLogger.error('Failed to initialize journey:', error as Error);
       dispatch({ 
         type: 'SET_ERROR', 
         payload: 'Failed to initialize journey' 
@@ -308,7 +318,7 @@ export function JourneyProvider({ children }: JourneyProviderProps) {
 
   // Convert Supabase journey progress to UserJourneyProgress format
   const convertSupabaseProgressToUserProgress = (
-    supabaseProgress: any[],
+    supabaseProgress: JourneyProgress[],
     userId: string,
     regionCode: RegionCode
   ): UserJourneyProgress => {
@@ -334,13 +344,14 @@ export function JourneyProvider({ children }: JourneyProviderProps) {
     const incompleteSteps = supabaseProgress.filter(step => !step.completed);
     const currentStepId = incompleteSteps.length > 0 
       ? incompleteSteps[incompleteSteps.length - 1].step_id
-      : null;
+      : 'research-lenders'; // default first step
 
     return {
       userId,
       regionCode,
       completedSteps,
       currentStepId,
+      currentPhaseId: 'pre-approval', // derive from currentStepId if needed
       stepProgress,
       completedChecklist: [], // We'll populate this from stepProgress if needed
       startedAt: new Date(Math.min(...supabaseProgress.map(s => new Date(s.created_at).getTime()))),
@@ -373,7 +384,7 @@ export function JourneyProvider({ children }: JourneyProviderProps) {
         );
       }
     } catch (error) {
-      journeyLogger.error('Failed to save progress to Supabase:', error);
+      journeyLogger.error('Failed to save progress to Supabase:', error as Error);
       // Don't throw - allow offline functionality to continue
     }
   };
@@ -419,14 +430,14 @@ export function JourneyProvider({ children }: JourneyProviderProps) {
       await supabaseService.updateJourneyStep(
         user.id,
         stepId,
-        stepId.split('-')[0], // Extract phase from step ID
+        stepId.split('-')[0], // Extract phase from step ID - validated by supabaseService
         false, // not completed, just started
         undefined,
         { startedAt: new Date().toISOString() }
       );
       journeyLogger.info('Step started in Supabase', { stepId });
     } catch (error) {
-      journeyLogger.error('Failed to sync step start with Supabase:', error);
+      journeyLogger.error('Failed to sync step start with Supabase:', error as Error);
       // Continue with local state - the persistence service will handle offline sync
     }
   };
@@ -441,7 +452,7 @@ export function JourneyProvider({ children }: JourneyProviderProps) {
       await supabaseService.updateJourneyStep(
         user.id,
         stepId,
-        stepId.split('-')[0], // Extract phase from step ID
+        stepId.split('-')[0], // Extract phase from step ID - validated by supabaseService
         true, // completed
         notes,
         { 
@@ -451,7 +462,7 @@ export function JourneyProvider({ children }: JourneyProviderProps) {
       );
       journeyLogger.info('Step completed in Supabase', { stepId });
     } catch (error) {
-      journeyLogger.error('Failed to sync step completion with Supabase:', error);
+      journeyLogger.error('Failed to sync step completion with Supabase:', error as Error);
       // Continue with local state - the persistence service will handle offline sync
     }
     
@@ -494,7 +505,7 @@ export function JourneyProvider({ children }: JourneyProviderProps) {
       await supabaseService.updateJourneyStep(
         user.id,
         stepId,
-        stepId.split('-')[0],
+        stepId.split('-')[0], // Extract phase from step ID - validated by supabaseService
         currentStepProgress?.status === 'completed' || false,
         currentStepProgress?.notes,
         { 
@@ -504,7 +515,7 @@ export function JourneyProvider({ children }: JourneyProviderProps) {
       );
       journeyLogger.info('Checklist item updated in Supabase', { stepId, checklistItemId, completed: newCompletedState });
     } catch (error) {
-      journeyLogger.error('Failed to sync checklist completion with Supabase:', error);
+      journeyLogger.error('Failed to sync checklist completion with Supabase:', error as Error);
       // Continue with local state - the persistence service will handle offline sync
     }
   };
@@ -529,7 +540,7 @@ export function JourneyProvider({ children }: JourneyProviderProps) {
         // For now, we'll create new records that effectively reset the progress
         await saveProgressToSupabase(newProgress);
       } catch (error) {
-        journeyLogger.error('Failed to reset progress in Supabase:', error);
+        journeyLogger.error('Failed to reset progress in Supabase:', error as Error);
       }
       
       dispatch({ 
@@ -540,19 +551,19 @@ export function JourneyProvider({ children }: JourneyProviderProps) {
   };
 
   const unlockAllSteps = async () => {
-    console.log('=== UNLOCK ALL STEPS DEBUG ===');
-    console.log('Current region:', currentRegion);
-    console.log('Engine exists:', !!engine);
-    console.log('User progress exists:', !!state.userProgress);
+    journeyLogger.debug('=== UNLOCK ALL STEPS DEBUG ===');
+    journeyLogger.debug('Current region:', { currentRegion });
+    journeyLogger.debug('Engine exists:', { exists: !!engine });
+    journeyLogger.debug('User progress exists:', { exists: !!state.userProgress });
     
     if (currentRegion && engine && state.userProgress) {
       // Get all steps from the journey engine
       const allSteps = engine.getAllSteps();
       const allStepIds = allSteps.map(step => step.id);
       
-      console.log('Total steps found:', allSteps.length);
-      console.log('All step IDs:', allStepIds);
-      console.log('Current completed steps:', state.userProgress.completedSteps);
+      journeyLogger.debug('Total steps found:', { total: allSteps.length });
+      journeyLogger.debug('All step IDs:', { stepIds: allStepIds });
+      journeyLogger.debug('Current completed steps:', state.userProgress.completedSteps);
       
       // Strategy: Recursively mark prerequisites as completed until all steps are available
       // This ensures we complete the minimum number of steps to unlock everything
@@ -560,14 +571,14 @@ export function JourneyProvider({ children }: JourneyProviderProps) {
       const completedSteps = new Set([...state.userProgress.completedSteps]);
       let changed = true;
       let iterations = 0;
-      const maxIterations = 20; // Safety limit
+      const maxIterations = JOURNEY_CONSTANTS.MAX_UNLOCK_ITERATIONS; // Safety limit
       
       // Keep adding prerequisite steps until all steps are unlocked or we hit the limit
       while (changed && iterations < maxIterations) {
         changed = false;
         iterations++;
         
-        console.log(`Unlock iteration ${iterations}:`);
+        journeyLogger.debug(`Unlock iteration ${iterations}:`);
         
         for (const step of allSteps) {
           if (!engine.isStepAvailable(step.id, Array.from(completedSteps))) {
@@ -575,7 +586,7 @@ export function JourneyProvider({ children }: JourneyProviderProps) {
             if (step.prerequisites) {
               for (const prereqId of step.prerequisites) {
                 if (!completedSteps.has(prereqId)) {
-                  console.log(`  - Marking prerequisite ${prereqId} as completed to unlock ${step.id}`);
+                  journeyLogger.debug(`  - Marking prerequisite ${prereqId} as completed to unlock ${step.id}`);
                   completedSteps.add(prereqId);
                   changed = true;
                 }
@@ -584,10 +595,10 @@ export function JourneyProvider({ children }: JourneyProviderProps) {
           }
         }
         
-        console.log(`  Total completed after iteration ${iterations}:`, completedSteps.size);
+        journeyLogger.debug(`Total completed after iteration ${iterations}`, { total: completedSteps.size });
       }
       
-      console.log('Final completed steps for unlock:', Array.from(completedSteps));
+      journeyLogger.debug('Final completed steps for unlock:', Array.from(completedSteps));
       
       // Create unlocked progress with minimal completed steps
       const unlockedProgress = {
@@ -596,9 +607,11 @@ export function JourneyProvider({ children }: JourneyProviderProps) {
         lastUpdated: new Date()
       };
       
-      console.log('New unlocked progress (prerequisites only):', unlockedProgress);
-      console.log('Completed steps before:', state.userProgress.completedSteps.length);
-      console.log('Completed steps after:', unlockedProgress.completedSteps.length);
+      journeyLogger.debug('New unlocked progress (prerequisites only):', unlockedProgress);
+      journeyLogger.info('Unlocking all steps', {
+        completedStepsBefore: state.userProgress.completedSteps.length,
+        completedStepsAfter: unlockedProgress.completedSteps.length
+      });
       
       // Save and update the progress
       await ProgressPersistence.saveProgress(unlockedProgress);
@@ -607,39 +620,40 @@ export function JourneyProvider({ children }: JourneyProviderProps) {
       if (user) {
         try {
           await saveProgressToSupabase(unlockedProgress);
-          console.log('Progress saved to Supabase');
+          journeyLogger.info('Progress saved to Supabase');
         } catch (error) {
-          console.error('Failed to save unlocked progress to Supabase:', error);
+          journeyLogger.error('Failed to save unlocked progress to Supabase:', error as Error);
         }
       }
       
-      console.log('Progress saved to persistence');
+      journeyLogger.info('Progress saved to persistence');
       
       dispatch({ 
         type: 'UPDATE_PROGRESS', 
         payload: unlockedProgress 
       });
-      console.log('Dispatched UPDATE_PROGRESS action');
+      journeyLogger.debug('Dispatched UPDATE_PROGRESS action');
       
       // Additional verification
       setTimeout(() => {
-        console.log('=== POST-UNLOCK VERIFICATION ===');
-        console.log('State after unlock:', state.userProgress?.completedSteps);
+        journeyLogger.debug('=== POST-UNLOCK VERIFICATION ===');
+        journeyLogger.debug('State after unlock:', state.userProgress?.completedSteps);
         
         // Test several steps to see if they're available
         const testSteps = allStepIds.slice(0, 5);
         testSteps.forEach(stepId => {
           const isAvailable = engine.isStepAvailable(stepId, unlockedProgress.completedSteps);
           const isCompleted = unlockedProgress.completedSteps.includes(stepId);
-          console.log(`Step ${stepId}: available=${isAvailable}, completed=${isCompleted}`);
+          journeyLogger.debug(`Step ${stepId}: available=${isAvailable}, completed=${isCompleted}`);
         });
       }, 100);
       
     } else {
-      console.log('Missing requirements for unlock:');
-      console.log('- currentRegion:', currentRegion);
-      console.log('- engine:', !!engine);
-      console.log('- state.userProgress:', !!state.userProgress);
+      journeyLogger.warn('Missing requirements for unlock:', {
+        currentRegion: !!currentRegion,
+        engine: !!engine,
+        userProgress: !!state.userProgress
+      });
     }
   };
 

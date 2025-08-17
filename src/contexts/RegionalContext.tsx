@@ -21,6 +21,7 @@ import {
   cacheUtils
 } from '@/lib/regionalOptimized';
 // Removed AuthContext dependency
+import { FINANCIAL_CONSTANTS } from '@/lib/constants';
 
 interface RegionalContextType extends RegionalContextState {
   // Actions
@@ -287,10 +288,10 @@ export function useRegionalUtils() {
 
     // This would use the regional calculation logic
     // For now, return a simple calculation
-    const landTransferTax = homePrice * (getTaxRate('landTransferTax') / 100);
-    const propertyTransferTax = homePrice * (getTaxRate('propertyTransferTax') / 100);
-    const legalFees = 1500; // Estimate
-    const insurance = homePrice * 0.003; // Estimate
+    const landTransferTax = homePrice * (getTaxRate('landTransferTax') / FINANCIAL_CONSTANTS.PERCENTAGE_DIVISOR);
+    const propertyTransferTax = homePrice * (getTaxRate('propertyTransferTax') / FINANCIAL_CONSTANTS.PERCENTAGE_DIVISOR);
+    const legalFees = FINANCIAL_CONSTANTS.ESTIMATED_LEGAL_FEES;
+    const insurance = homePrice * FINANCIAL_CONSTANTS.INSURANCE_RATE;
 
     const total = landTransferTax + propertyTransferTax + legalFees + insurance;
 

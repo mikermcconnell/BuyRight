@@ -15,6 +15,7 @@ import {
 import { Menu, Transition } from '@headlessui/react';
 import { Fragment } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
+import { BuyRightIcon } from '@/components/ui/BuyRightLogo';
 
 interface HeaderProps {
   title?: string;
@@ -99,10 +100,8 @@ export default function Header({
           )}
 
           {/* Logo */}
-          <Link href="/dashboard" className="flex items-center">
-            <div className="w-8 h-8 bg-primary-500 rounded-lg flex items-center justify-center">
-              <span className="text-white font-bold text-sm">BR</span>
-            </div>
+          <Link href="/dashboard" className="flex items-center hover:opacity-80 transition-opacity">
+            <BuyRightIcon size="sm" />
           </Link>
 
           {/* Title */}

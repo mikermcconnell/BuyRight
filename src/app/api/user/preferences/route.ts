@@ -98,7 +98,12 @@ export async function PUT(request: NextRequest) {
 
     // Update profile preferences
     if (timeline_preference || budget_max !== undefined || home_type_preference) {
-      const updateData: any = { updated_at: new Date().toISOString() };
+      const updateData: { 
+        updated_at: string;
+        timeline_preference?: string;
+        budget_max?: number;
+        home_type_preference?: string;
+      } = { updated_at: new Date().toISOString() };
       
       if (timeline_preference) updateData.timeline_preference = timeline_preference;
       if (budget_max !== undefined) updateData.budget_max = budget_max;

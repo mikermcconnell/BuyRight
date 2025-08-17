@@ -5,6 +5,8 @@ import { useRouter } from 'next/navigation';
 import { ChevronLeftIcon } from '@heroicons/react/24/outline';
 import LocationSelection from '@/components/onboarding/LocationSelection';
 import ProfileSetup from '@/components/onboarding/ProfileSetup';
+import BuyRightLogo from '@/components/ui/BuyRightLogo';
+import { withPageErrorBoundary } from '@/components/ui/PageErrorBoundary';
 
 type OnboardingStep = 'location' | 'profile';
 
@@ -18,7 +20,7 @@ const stepDescriptions: Record<OnboardingStep, string> = {
   profile: 'Help us personalize your experience and provide the most relevant guidance for your situation.',
 };
 
-export default function OnboardingPage() {
+function OnboardingPage() {
   const [currentStep, setCurrentStep] = useState<OnboardingStep>('location');
   const [selectedLocation, setSelectedLocation] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -36,7 +38,14 @@ export default function OnboardingPage() {
     }
   };
 
-  const handleProfileSubmit = async (profileData: any) => {
+  const handleProfileSubmit = async (profileData: {
+    budgetMax?: number | "";
+    timelinePreference: "fast" | "normal" | "thorough";
+    homeTypePreference?: "single_family" | "condo" | "townhouse";
+    firstTimeBuyer: boolean;
+    currentSituation?: "renting" | "living_with_family" | "own_home" | "other";
+    preapprovalStatus?: "none" | "shopping" | "have_preapproval" | "not_sure";
+  }) => {
     setIsSubmitting(true);
     
     try {
@@ -76,6 +85,11 @@ export default function OnboardingPage() {
       <div className="w-full max-w-2xl">
         {/* Header */}
         <div className="text-center mb-8">
+          {/* BuyRight Branding */}
+          <div className="mb-8">
+            <BuyRightLogo size="xl" className="justify-center" />
+          </div>
+          
           <div className="flex items-center justify-center mb-4">
             {currentStep === 'profile' && (
               <button
@@ -168,3 +182,5 @@ export default function OnboardingPage() {
     </div>
   );
 }
+
+export default withPageErrorBoundary(OnboardingPage, 'Onboarding');

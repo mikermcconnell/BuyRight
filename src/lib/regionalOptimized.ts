@@ -96,7 +96,7 @@ class RegionalContentCache {
     let oldestEntry: [RegionCode, CachedRegionalContent] | null = null;
     let oldestTime = Date.now();
 
-    for (const [key, value] of this.cache.entries()) {
+    for (const [key, value] of Array.from(this.cache.entries())) {
       if (value.lastAccessed < oldestTime) {
         oldestTime = value.lastAccessed;
         oldestEntry = [key, value];
@@ -124,6 +124,11 @@ class RegionalContentCache {
       cacheMisses: 0,
       validationErrors: 0
     };
+  }
+
+  // Public method to add load time
+  addLoadTime(time: number): void {
+    this.metrics.loadTime += time;
   }
 
   // Get cache statistics for monitoring
@@ -216,7 +221,7 @@ const loadRegionalDataLazy = async (regionCode: RegionCode): Promise<any> => {
     }
 
     const loadTime = performance.now() - startTime;
-    regionalCache.metrics.loadTime += loadTime;
+    regionalCache.addLoadTime(loadTime);
 
     return regionalModule.default || regionalModule;
   } catch (error) {

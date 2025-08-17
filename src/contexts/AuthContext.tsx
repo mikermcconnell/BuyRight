@@ -77,11 +77,11 @@ export function AuthProvider({ children }: AuthProviderProps) {
             setProfile(userProfile);
             authLogger.info('User session restored', { userId: supabaseUser.id });
           } catch (profileError) {
-            authLogger.error('Error loading profile:', profileError);
+            authLogger.error('Error loading profile:', profileError as Error);
           }
         }
       } catch (error) {
-        authLogger.error('Error initializing auth:', error);
+        authLogger.error('Error initializing auth:', error as Error);
       } finally {
         setLoading(false);
       }
@@ -89,10 +89,10 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
     initializeAuth();
 
-    // Listen for auth changes
+    // Listen for auth changes with proper cleanup
     const { data: { subscription } } = supabaseClient.auth.onAuthStateChange(
       async (event, session) => {
-        authLogger.info('Auth state changed:', event);
+        authLogger.info('Auth state changed:', { event });
         
         if (event === 'SIGNED_IN' && session?.user) {
           const supabaseUser = session.user;
@@ -127,8 +127,11 @@ export function AuthProvider({ children }: AuthProviderProps) {
       }
     );
 
+    // Proper cleanup function to prevent memory leaks
     return () => {
-      subscription.unsubscribe();
+      if (subscription && typeof subscription.unsubscribe === 'function') {
+        subscription.unsubscribe();
+      }
     };
   }, []);
 

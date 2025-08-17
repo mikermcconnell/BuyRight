@@ -60,7 +60,7 @@ export class CalculatorErrorBoundary extends Component<Props, State> {
         }
       });
     } catch (error) {
-      calculatorLogger.error('Failed to clear calculator data', error);
+      calculatorLogger.error('Failed to clear calculator data', error as Error);
     }
     
     this.handleRetry();

@@ -235,7 +235,7 @@ export default function HomeInspectionQuestionsGuide() {
           <div className="w-20 h-20 rounded-2xl flex items-center justify-center mx-auto mb-6" style={{ backgroundColor: 'var(--duolingo-green)' }}>
             <EyeIcon className="w-10 h-10 text-white" />
           </div>
-          <h1 className="duolingo-title mb-4">Home Inspection Questions</h1>
+          <h1 className="duolingo-title mb-4">🔍 What to Ask During Your Home Inspection</h1>
           <p className="duolingo-subtitle max-w-3xl mx-auto">
             Essential questions to ask during your home inspection. 
             Learn what to focus on and what red flags to watch for.

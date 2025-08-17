@@ -349,7 +349,7 @@ export default function SelectingRealEstateAgentGuide() {
           <div className="w-20 h-20 rounded-2xl flex items-center justify-center mx-auto mb-6" style={{ backgroundColor: 'var(--duolingo-green)' }}>
             <UserGroupIcon className="w-10 h-10 text-white" />
           </div>
-          <h1 className="duolingo-title mb-4">Selecting Your Real Estate Agent</h1>
+          <h1 className="duolingo-title mb-4">🤝 How to Find Your Perfect Real Estate Agent</h1>
           <p className="duolingo-subtitle max-w-3xl mx-auto">
             Your agent is one of the most important partners in your home buying journey. 
             This guide helps you find an agent who understands your needs and will advocate for your best interests.

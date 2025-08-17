@@ -178,9 +178,11 @@ export interface ChecklistItem {
   title: string;
   description?: string;
   required: boolean;
-  category: 'document' | 'action' | 'decision' | 'research';
+  category: 'document' | 'action' | 'decision' | 'research' | 'planning';
   estimatedTime?: string;
   dependencies?: string[]; // other checklist item ids
+  guideLink?: string; // optional guide link
+  details?: string[]; // optional details array
 }
 
 // Journey Progress Tracking

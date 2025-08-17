@@ -34,10 +34,10 @@ class InMemoryRateLimitStore {
     const now = Date.now();
     const expiredKeys: string[] = [];
 
-    for (const [key, entry] of this.store.entries()) {
+    for (const [key, entry] of Array.from(this.store.entries())) {
       // Remove entries with no recent requests (older than 1 hour)
       const hasRecentRequests = entry.requests.some(
-        req => now - req.timestamp < 60 * 60 * 1000
+        (req: { timestamp: number; success: boolean }) => now - req.timestamp < 60 * 60 * 1000
       );
 
       if (!hasRecentRequests && (!entry.blockedUntil || now > entry.blockedUntil)) {

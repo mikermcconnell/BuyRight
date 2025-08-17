@@ -13,6 +13,7 @@ import {
   ArrowLeftIcon,
   InformationCircleIcon
 } from '@heroicons/react/24/outline';
+import BuyRightLogo from '@/components/ui/BuyRightLogo';
 
 export default function PreApprovalDocumentsGuide() {
   const router = useRouter();
@@ -244,13 +245,17 @@ export default function PreApprovalDocumentsGuide() {
             <span>Back to Journey</span>
           </button>
           
+          {/* BuyRight Branding */}
+          <div className="mb-6">
+            <BuyRightLogo size="lg" className="justify-center" />
+          </div>
+          
           <div className="w-20 h-20 rounded-2xl flex items-center justify-center mx-auto mb-6" style={{ backgroundColor: 'var(--duolingo-green)' }}>
             <DocumentTextIcon className="w-10 h-10 text-white" />
           </div>
-          <h1 className="duolingo-title mb-4">Pre-Approval Document Guide</h1>
+          <h1 className="duolingo-title mb-4">📋 What Papers Do I Need for the Bank?</h1>
           <p className="duolingo-subtitle max-w-2xl mx-auto">
-            Complete checklist of documents lenders typically require for mortgage pre-approval. 
-            Get organized and speed up your application process.
+            Here's exactly what documents you'll need to bring to get approved for your home loan. Get these ready and you'll breeze through the process!
           </p>
         </div>
 

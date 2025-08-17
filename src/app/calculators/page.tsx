@@ -13,6 +13,7 @@ import {
   CheckCircleIcon,
   LockClosedIcon,
 } from '@heroicons/react/24/outline';
+import { withPageErrorBoundary } from '@/components/ui/PageErrorBoundary';
 
 interface Calculator {
   id: string;
@@ -27,7 +28,7 @@ interface Calculator {
   status?: 'available' | 'locked' | 'completed';
 }
 
-export default function CalculatorsPage() {
+function CalculatorsPage() {
   const router = useRouter();
   const [hasCompletedAffordability, setHasCompletedAffordability] = useState(false);
   const [isClient, setIsClient] = useState(false);
@@ -233,3 +234,5 @@ export default function CalculatorsPage() {
     </div>
   );
 }
+
+export default withPageErrorBoundary(CalculatorsPage, 'Calculators');

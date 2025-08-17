@@ -1,14 +1,18 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { useJourney, useJourneyProgress } from '@/contexts/JourneyContext';
 import { CalculatorIntegrationService } from '@/lib/calculatorIntegration';
 import CalculatorWidget from '@/components/journey/CalculatorWidget';
 import { UserProfile, DashboardInsights } from '@/types/profile';
 import { journeyLogger, logError, logInfo } from '@/lib/logger';
+import Header from '@/components/navigation/Header';
+import { BuyRightHeader } from '@/components/ui/BuyRightLogo';
+import { withPageErrorBoundary } from '@/components/ui/PageErrorBoundary';
+import { UI_CONSTANTS } from '@/lib/constants';
 
-export default function Dashboard() {
+function Dashboard() {
   const router = useRouter();
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [initialLoading, setInitialLoading] = useState(true);
@@ -37,6 +41,59 @@ export default function Dashboard() {
     totalStepsCount 
   } = useJourneyProgress();
 
+  // Memoize expensive calculations
+  const progressDisplayValue = useMemo(() => Math.round(progressPercentage), [progressPercentage]);
+  
+  const achievementMessage = useMemo(() => {
+    if (completedStepsCount >= UI_CONSTANTS.ACHIEVEMENT_THRESHOLDS.CRUSHING_IT) return 'You\'re Crushing It!';
+    if (completedStepsCount >= UI_CONSTANTS.ACHIEVEMENT_THRESHOLDS.GREAT_PROGRESS) return 'Great Progress!';
+    if (completedStepsCount >= UI_CONSTANTS.ACHIEVEMENT_THRESHOLDS.NICE_START) return 'Nice Start!';
+    return 'Let\'s Begin!';
+  }, [completedStepsCount]);
+
+  const stepStatusCounts = useMemo(() => {
+    if (!availableSteps || !currentStep) {
+      return { available: 0, completed: completedStepsCount, remaining: totalStepsCount - completedStepsCount };
+    }
+    
+    return {
+      available: availableSteps.length,
+      completed: completedStepsCount,
+      remaining: totalStepsCount - completedStepsCount
+    };
+  }, [availableSteps, completedStepsCount, totalStepsCount, currentStep]);
+
+  // Memoize calculator insights to avoid unnecessary recalculations
+  const calculatorInsightsMemo = useMemo(() => {
+    return CalculatorIntegrationService.getDashboardInsights();
+  }, []); // Only recalculate when component mounts
+
+  // Memoized callback functions to prevent unnecessary re-renders
+  const handleUnlockAllSteps = useCallback(async () => {
+    if (unlockAllSteps) {
+      await unlockAllSteps();
+    }
+  }, [unlockAllSteps]);
+
+  const handleResetProgress = useCallback(async () => {
+    setShowResetConfirm(false);
+    if (resetProgress) {
+      await resetProgress();
+    }
+  }, [resetProgress]);
+
+  const handleNavigateToStep = useCallback((stepId: string) => {
+    const stepParts = stepId.split('-');
+    if (stepParts.length >= 2) {
+      const phaseId = stepParts[0];
+      router.push(`/journey/${phaseId}/${stepId}`);
+    }
+  }, [router]);
+
+  const handleNavigateToCalculators = useCallback(() => {
+    router.push('/calculators');
+  }, [router]);
+
   useEffect(() => {
     // Load profile from localStorage
     const savedProfile = localStorage.getItem('buyright_profile');
@@ -44,12 +101,11 @@ export default function Dashboard() {
       setProfile(JSON.parse(savedProfile));
     }
     
-    // Load calculator insights
-    const insights = CalculatorIntegrationService.getDashboardInsights();
-    setCalculatorInsights(insights);
+    // Use memoized calculator insights
+    setCalculatorInsights(calculatorInsightsMemo);
     
     setInitialLoading(false);
-  }, []);
+  }, [calculatorInsightsMemo]);
 
   if (initialLoading || journeyLoading) {
     return (
@@ -92,10 +148,6 @@ export default function Dashboard() {
     completeStep(stepId);
   };
 
-  const handleResetProgress = () => {
-    resetProgress();
-    setShowResetConfirm(false);
-  };
 
   // Helper function to round to nearest $1000 and format without decimals
   const formatRoundedCurrency = (amount: number) => {
@@ -109,87 +161,39 @@ export default function Dashboard() {
   };
 
   return (
-    <div className="duolingo-container min-h-screen py-8">
-      <div className="w-full max-w-4xl">
-        {/* Debug Info (remove in production) */}
-        {process.env.NODE_ENV === 'development' && (
-          <div className="bg-gray-100 p-4 rounded-lg mb-4 text-sm">
-            <h3 className="font-bold mb-2">Debug Info:</h3>
-            <p>Current Step: {currentStep?.id || 'none'}</p>
-            <p>Completed Steps: [{phases.flatMap(p => p.steps).filter(s => isStepCompleted(s.id)).map(s => s.id).join(', ')}]</p>
-            <p>Available Steps: [{phases.flatMap(p => p.steps).filter(s => isStepAvailable(s.id)).map(s => s.id).join(', ')}]</p>
-          </div>
-        )}
+    <div className="min-h-screen bg-gray-50">
+      {/* Header with User Menu */}
+      <Header 
+        title="Dashboard"
+        showLocation={true}
+        showNotifications={true}
+        showUserMenu={true}
+      />
+      
+      <div className="duolingo-container py-8">
+        <div className="w-full max-w-4xl">
 
-        {/* Header */}
-        <div className="duolingo-card mb-8">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-3">
-              <div className="w-12 h-12 bg-green-500 rounded-xl flex items-center justify-center">
-                <span className="text-white font-bold text-xl">🏠</span>
-              </div>
-              <span className="text-2xl font-bold text-gray-800">BuyRight</span>
-            </div>
-            
-            {/* Action Buttons */}
-            <div className="flex space-x-3">
-              <button 
-                onClick={async () => {
-                  journeyLogger.info('Unlock all steps button clicked');
-                  await unlockAllSteps();
-                  
-                  // Quick verification after a short delay
-                  setTimeout(() => {
-                    const testSteps = phases.flatMap(p => p.steps).slice(0, 5);
-                    const stepStatus = testSteps.map(step => ({
-                      stepId: step.id,
-                      available: isStepAvailable(step.id),
-                      completed: isStepCompleted(step.id)
-                    }));
-                    journeyLogger.info('Steps unlocked - verification', { stepStatus });
-                  }, 200);
-                }}
-                className="px-4 py-2 text-sm bg-green-100 hover:bg-green-200 text-green-700 rounded-lg font-medium transition-all duration-200 flex items-center space-x-2"
-                title="Unlock all journey steps for demo/testing"
-                aria-label="Unlock all journey steps for demo and testing purposes"
-              >
-                <span>🔓</span>
-                <span>Unlock All Steps</span>
-              </button>
-              
-              <button 
-                onClick={() => setShowResetConfirm(true)}
-                className="px-4 py-2 text-sm bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg font-medium transition-all duration-200 flex items-center space-x-2"
-                title="Reset all progress"
-                aria-label="Reset all journey progress and start over"
-              >
-                <span>🔄</span>
-                <span>Reset Progress</span>
-              </button>
-            </div>
-          </div>
-        </div>
 
         {/* Welcome Section */}
         <div className="duolingo-card mb-8">
           <div className="text-center">
             <h1 className="duolingo-title mb-2">
-              Welcome back, {profile?.firstName || mockUser.email.split('@')[0]}! 🎉
+              Hey {profile?.firstName || mockUser.email.split('@')[0]}! 🏡
             </h1>
             <p className="duolingo-subtitle">
-              Ready to continue your home buying journey?
+              You're doing great! Let's take the next step toward your new home.
             </p>
             <div className="flex items-center justify-center space-x-6 mt-6">
               <div className="text-center">
                 <div className="text-xl font-bold" style={{ color: 'var(--duolingo-green)' }}>
-                  {completedStepsCount}/{totalStepsCount}
+                  {stepStatusCounts.completed}/{totalStepsCount}
                 </div>
                 <div className="text-sm text-gray-600">Steps Complete</div>
               </div>
               <div className="text-center">
                 <div className="text-xl">🏆</div>
                 <div className="text-sm font-bold" style={{ color: 'var(--duolingo-green)' }}>
-                  {completedStepsCount >= 3 ? 'On Fire!' : 'Building Momentum!'}
+                  {achievementMessage}
                 </div>
               </div>
             </div>
@@ -204,24 +208,24 @@ export default function Dashboard() {
               Your Financial Picture
             </h2>
 
-            {/* Primary Financial Numbers */}
+            {/* Primary Financial Numbers - Featured at Top */}
             {(calculatorInsights.maxBudget || calculatorInsights.totalCashRequired) && (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
                 {calculatorInsights.maxBudget && (
-                  <div className="bg-green-50 rounded-lg p-4 text-center border-2 border-green-200">
-                    <div className="text-2xl font-bold text-green-600 mb-1 whitespace-nowrap">
+                  <div className="bg-green-50 rounded-lg p-6 text-center border-2 border-green-200">
+                    <div className="text-3xl font-bold text-green-600 mb-2 whitespace-nowrap">
                       {formatRoundedCurrency(calculatorInsights.maxBudget)}
                     </div>
-                    <div className="text-sm text-green-700">Maximum Home Price</div>
+                    <div className="text-lg text-green-700 font-medium">Maximum Home Price</div>
                   </div>
                 )}
                 
                 {calculatorInsights.totalCashRequired && (
-                  <div className="bg-green-50 rounded-lg p-4 text-center border-2 border-green-200">
-                    <div className="text-2xl font-bold text-green-600 mb-1 whitespace-nowrap">
+                  <div className="bg-purple-50 rounded-lg p-6 text-center border-2 border-purple-200">
+                    <div className="text-3xl font-bold text-purple-600 mb-2 whitespace-nowrap">
                       {formatRoundedCurrency(calculatorInsights.totalCashRequired)}
                     </div>
-                    <div className="text-sm text-green-700">Total Cash Required</div>
+                    <div className="text-lg text-purple-700 font-medium">Total Cash Needed</div>
                   </div>
                 )}
               </div>
@@ -289,7 +293,7 @@ export default function Dashboard() {
 
             <div className="mt-4 text-center">
               <button 
-                onClick={() => router.push('/calculators')}
+                onClick={handleNavigateToCalculators}
                 className="px-6 py-2 bg-green-100 hover:bg-green-200 text-green-700 rounded-lg font-medium transition-all duration-200"
                 aria-label="Go to calculators page to update your financial calculations"
               >
@@ -303,28 +307,67 @@ export default function Dashboard() {
         {calculatorInsights && !calculatorInsights.maxBudget && (
           <div className="duolingo-card mb-8">
             <div className="text-center">
-              <div className="text-4xl mb-3">🧮</div>
-              <h2 className="duolingo-title mb-2">Start with Your Budget</h2>
+              <div className="text-4xl mb-3">🏡</div>
+              <h2 className="duolingo-title mb-2">Let's Find Your Dream Home Budget!</h2>
               <p className="duolingo-subtitle mb-6">
-                Use our financial calculators to understand what you can afford before house hunting
+                Ready to discover what amazing home you can afford? Our friendly calculator will help you figure it out in just a few minutes!
               </p>
               <button 
                 onClick={() => router.push('/calculators/affordability')}
                 className="duolingo-button"
                 aria-label="Start affordability calculator to determine your home buying budget"
               >
-                Calculate Affordability 🚀
+                Find Out What I Can Afford! ✨
               </button>
             </div>
           </div>
         )}
 
         <div className="space-y-8">
+          {/* Action Buttons */}
+          <div className="duolingo-card">
+            <div className="flex justify-center space-x-3">
+              <button 
+                onClick={async () => {
+                  journeyLogger.info('Unlock all steps button clicked');
+                  await unlockAllSteps();
+                  
+                  // Quick verification after a short delay
+                  setTimeout(() => {
+                    const testSteps = phases.flatMap(p => p.steps).slice(0, 5);
+                    const stepStatus = testSteps.map(step => ({
+                      stepId: step.id,
+                      available: isStepAvailable(step.id),
+                      completed: isStepCompleted(step.id)
+                    }));
+                    journeyLogger.info('Steps unlocked - verification', { stepStatus });
+                  }, 200);
+                }}
+                className="px-4 py-2 text-sm bg-green-100 hover:bg-green-200 text-green-700 rounded-lg font-medium transition-all duration-200 flex items-center space-x-2"
+                title="Unlock all journey steps for demo/testing"
+                aria-label="Unlock all journey steps for demo and testing purposes"
+              >
+                <span>🔓</span>
+                <span>Unlock All Steps</span>
+              </button>
+              
+              <button 
+                onClick={() => setShowResetConfirm(true)}
+                className="px-4 py-2 text-sm bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg font-medium transition-all duration-200 flex items-center space-x-2"
+                title="Reset all progress"
+                aria-label="Reset all journey progress and start over"
+              >
+                <span>🔄</span>
+                <span>Reset Progress</span>
+              </button>
+            </div>
+          </div>
+
           {/* Main Progress */}
           <div className="duolingo-card">
             <h2 className="duolingo-title mb-6 flex items-center justify-center">
-              <span className="text-2xl mr-3">🎯</span>
-              Your Home Buying Journey
+              <span className="text-2xl mr-3">🗺️</span>
+              Your Path to Home Ownership
             </h2>
 
             {/* Progress Bar */}
@@ -332,16 +375,16 @@ export default function Dashboard() {
               <div className="flex justify-between items-center mb-3">
                 <span className="text-lg font-bold text-gray-700">Overall Progress</span>
                 <span className="text-xl font-bold" style={{ color: 'var(--duolingo-green)' }}>
-                  {Math.round(progressPercentage)}%
+                  {progressDisplayValue}%
                 </span>
               </div>
               <div 
                 className="w-full h-4 bg-gray-200 rounded-full overflow-hidden"
                 role="progressbar"
-                aria-valuenow={Math.round(progressPercentage)}
+                aria-valuenow={progressDisplayValue}
                 aria-valuemin={0}
                 aria-valuemax={100}
-                aria-label={`Journey progress: ${Math.round(progressPercentage)}% complete`}
+                aria-label={`Journey progress: ${progressDisplayValue}% complete`}
               >
                 <div 
                   className="h-full rounded-full transition-all duration-1000 ease-out"
@@ -376,18 +419,18 @@ export default function Dashboard() {
                             : 'bg-gray-50 border-gray-200 hover:border-gray-300 cursor-not-allowed'
                       }
                     `}
-                    onClick={() => {
-                      if (isAvailable || isCompleted || isCurrent) {
-                        router.push(`/journey/${step.phase.id}/${step.id}`);
-                      }
-                    }}
                     role="button"
                     tabIndex={isAvailable || isCompleted || isCurrent ? 0 : -1}
-                    aria-label={`${step.title} - ${isCompleted ? 'Completed' : isCurrent ? 'Current step' : isAvailable ? 'Available to start' : 'Locked'} - ${step.description}`}
+                    aria-label={`${step.title} - ${isCompleted ? 'Completed' : isCurrent ? 'Current step' : isAvailable ? 'Available' : 'Locked'}`}
                     onKeyDown={(e) => {
                       if ((e.key === 'Enter' || e.key === ' ') && (isAvailable || isCompleted || isCurrent)) {
                         e.preventDefault();
-                        router.push(`/journey/${step.phase.id}/${step.id}`);
+                        router.push(`/journey/${step.phaseId}/${step.id}`);
+                      }
+                    }}
+                    onClick={() => {
+                      if (isAvailable || isCompleted || isCurrent) {
+                        router.push(`/journey/${step.phaseId}/${step.id}`);
                       }
                     }}
                   >
@@ -452,7 +495,7 @@ export default function Dashboard() {
                     {(isAvailable || isCompleted || isCurrent) && (
                       <div className="flex items-center space-x-2">
                         <span className="text-gray-400 text-sm">
-                          Click to {isCompleted ? 'review' : isCurrent ? 'continue' : 'start'}
+                          {isCompleted ? '✨ Review' : isCurrent ? '🚀 Continue' : '👆 Let\'s Go!'}
                         </span>
                         <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
@@ -470,7 +513,7 @@ export default function Dashboard() {
             <div className="duolingo-card">
               <div className="text-center">
                 <h3 className="duolingo-title mb-4">
-                  🏆 Current Goal
+                  🌟 Your Next Step
                 </h3>
                 <div className="text-4xl mb-3">🎯</div>
                 <div className="text-lg font-bold text-gray-700 mb-2">
@@ -479,14 +522,14 @@ export default function Dashboard() {
                 <p className="text-gray-600 mb-4">
                   {currentStep.description}
                 </p>
-                <div className="text-sm text-gray-500 mb-4">
-                  Estimated time: {currentStep.estimatedDuration}
+                <div className="text-sm text-green-600 mb-4 font-medium">
+                  ⏱️ About {currentStep.estimatedDuration} to complete
                 </div>
                 <button 
-                  onClick={() => handleCompleteStep(currentStep.id)}
+                  onClick={() => router.push(`/journey/${currentStep.phaseId}/${currentStep.id}`)}
                   className="duolingo-button"
                 >
-                  Let&apos;s Go! 🚀
+                  Start This Step! 🚀
                 </button>
               </div>
             </div>
@@ -533,7 +576,10 @@ export default function Dashboard() {
             </div>
           </div>
         )}
+        </div>
       </div>
     </div>
   );
 }
+
+export default withPageErrorBoundary(Dashboard, 'Dashboard');

@@ -116,7 +116,7 @@ export async function requireAuth(request: NextRequest): Promise<{ user: Authent
           message: 'Authentication required',
         },
       },
-      { status: 401 }
+      { status: AUTH_CONSTANTS.HTTP_STATUS.UNAUTHORIZED }
     );
   }
 
@@ -235,7 +235,9 @@ export function checkRateLimit(identifier: string, config: RateLimitConfig): boo
 /**
  * Generate a secure random string
  */
-export function generateSecureToken(length: number = 32): string {
+import { AUTH_CONSTANTS } from './constants';
+
+export function generateSecureToken(length: number = AUTH_CONSTANTS.DEFAULT_TOKEN_LENGTH): string {
   const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
   let result = '';
   for (let i = 0; i < length; i++) {
@@ -267,7 +269,7 @@ export function requireEmailVerification(user: AuthenticatedUser): NextResponse 
           message: 'Please verify your email address to continue',
         },
       },
-      { status: 403 }
+      { status: AUTH_CONSTANTS.HTTP_STATUS.FORBIDDEN }
     );
   }
   return null;

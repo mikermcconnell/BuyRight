@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createSupabaseRouteHandlerClient } from '@/lib/supabase-server';
 import { SupabaseService, getSupabaseAuthErrorMessage, isSupabaseAvailable } from '@/lib/supabase';
+import { authRateLimiter } from '@/lib/rate-limiter';
 
 // POST /api/auth/login
 export async function POST(request: NextRequest) {
@@ -36,6 +37,11 @@ export async function POST(request: NextRequest) {
         { status: 400 }
       );
     }
+
+    // Generate client identifier for rate limiting
+    const clientId = request.headers.get('x-forwarded-for') || 
+                    request.headers.get('x-real-ip') || 
+                    email.toLowerCase().trim(); // fallback to email for demo
 
     // Attempt to sign in with Supabase
     const { data, error } = await supabase.auth.signInWithPassword({

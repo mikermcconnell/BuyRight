@@ -94,6 +94,7 @@ export default function InterestRateComparisonGuide() {
             <button
               onClick={() => router.push('/dashboard')}
               className="hover:text-green-600 transition-colors"
+              aria-label="Navigate to dashboard"
             >
               Dashboard
             </button>
@@ -101,6 +102,7 @@ export default function InterestRateComparisonGuide() {
             <button
               onClick={() => router.back()}
               className="hover:text-green-600 transition-colors"
+              aria-label="Go back to previous page"
             >
               Back
             </button>

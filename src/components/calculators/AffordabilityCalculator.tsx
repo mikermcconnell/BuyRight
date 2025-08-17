@@ -23,6 +23,7 @@ import {
   BanknotesIcon,
   WrenchScrewdriverIcon,
 } from '@heroicons/react/24/outline';
+import BuyRightLogo from '@/components/ui/BuyRightLogo';
 
 interface ClosingCost {
   id: string;
@@ -578,7 +579,7 @@ const AffordabilityCalculator = React.memo(function AffordabilityCalculator({
           inputData: {
             annualIncome,
             monthlyDebts,
-            downPaymentAmount: numericDownPayment,
+            downPaymentAmount: downPaymentAmount === "" ? 0 : downPaymentAmount,
             interestRate,
             loanTerm,
             includeProperty: true,
@@ -600,12 +601,17 @@ const AffordabilityCalculator = React.memo(function AffordabilityCalculator({
     <div className="max-w-2xl mx-auto">
       {/* Calculator Header */}
       <div className="text-center mb-8">
+        {/* BuyRight Branding */}
+        <div className="mb-6">
+          <BuyRightLogo size="lg" className="justify-center" />
+        </div>
+        
         <div className="w-20 h-20 rounded-2xl flex items-center justify-center mx-auto mb-6" style={{ backgroundColor: 'var(--duolingo-green)' }}>
           <CurrencyDollarIcon className="w-10 h-10 text-white" />
         </div>
-        <h1 className="duolingo-title mb-4">Affordability Calculator</h1>
+        <h1 className="duolingo-title mb-4">🏡 What Can You Afford?</h1>
         <p className="duolingo-subtitle">
-          Discover what you can afford based on your income and debts
+          Let's figure out your perfect home budget together!
         </p>
       </div>
 
@@ -632,7 +638,7 @@ const AffordabilityCalculator = React.memo(function AffordabilityCalculator({
           {/* Annual Income */}
           <div className="duolingo-form-group">
             <label htmlFor="annualIncome" className="duolingo-label">
-              Annual Gross Income
+              💰 What do you make per year? (before taxes)
             </label>
             <div className="relative">
               <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 font-medium">$</span>
@@ -659,7 +665,7 @@ const AffordabilityCalculator = React.memo(function AffordabilityCalculator({
           {/* Monthly Debts */}
           <div className="duolingo-form-group">
             <label htmlFor="monthlyDebts" className="duolingo-label">
-              Monthly Debt Payments
+              💳 Monthly debt payments (credit cards, loans, etc.)
             </label>
             <div className="relative">
               <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 font-medium">$</span>
@@ -711,7 +717,7 @@ const AffordabilityCalculator = React.memo(function AffordabilityCalculator({
           {/* Interest Rate */}
           <div className="duolingo-form-group">
             <label htmlFor="interestRate" className="duolingo-label">
-              Expected Interest Rate
+              📈 Interest rate you expect to get (ask your bank!)
             </label>
             <div className="relative">
               <input
@@ -1142,10 +1148,10 @@ const AffordabilityCalculator = React.memo(function AffordabilityCalculator({
               <InformationCircleIcon className="w-10 h-10 text-red-600" />
             </div>
             <h3 className="mobile-title mb-4">
-              Unable to Calculate Affordability
+              Let's Work on This Together! 💪
             </h3>
             <p className="text-gray-600 mb-6 text-center">
-              Based on your current income and debts, additional debt reduction may be needed before purchasing a home.
+              No worries! We just need to adjust a few numbers. Try reducing monthly debts or increasing income to see your options.
             </p>
             <div className="result-card-info yellow text-left">
               <h4 className="font-semibold text-yellow-900 mb-4">💪 Suggestions to Improve:</h4>

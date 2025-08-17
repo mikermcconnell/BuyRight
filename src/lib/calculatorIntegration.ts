@@ -1,6 +1,8 @@
 // Calculator-Journey Integration Service
 // Manages calculator results persistence and journey integration
 
+import { FINANCIAL_CONSTANTS } from './constants';
+
 interface ClosingCostItem {
   name: string;
   amount: number;
@@ -271,7 +273,7 @@ export class CalculatorIntegrationService {
   // Get step completion percentage based on calculations
   static getStepCalculationProgress(stepId: string): number {
     const mapping = this.getCalculatorsForStep(stepId);
-    if (!mapping) return 100; // No calculators required
+    if (!mapping) return FINANCIAL_CONSTANTS.DEFAULT_COMPLETION_PERCENTAGE; // No calculators required
     
     const results = this.getResults();
     if (!results) return 0;
@@ -293,7 +295,7 @@ export class CalculatorIntegrationService {
       }
     });
     
-    return (completed / total) * 100;
+    return (completed / total) * FINANCIAL_CONSTANTS.DEFAULT_COMPLETION_PERCENTAGE;
   }
 
   // Get dashboard insights from calculator results
@@ -308,7 +310,11 @@ export class CalculatorIntegrationService {
     const results = this.getResults();
     const insights = {
       readyToBuy: false,
-      recommendations: [] as string[]
+      recommendations: [] as string[],
+      maxBudget: undefined as number | undefined,
+      totalCashRequired: undefined as number | undefined,
+      monthlyPayment: undefined as number | undefined,
+      totalClosingCosts: undefined as number | undefined
     };
     
     if (!results) {
@@ -337,11 +343,11 @@ export class CalculatorIntegrationService {
     insights.readyToBuy = !!(
       results.affordability && 
       results.mortgage.length > 0 && 
-      results.affordability.debtToIncomeRatio <= 36
+      results.affordability.debtToIncomeRatio <= FINANCIAL_CONSTANTS.MAX_DEBT_TO_INCOME_RATIO
     );
     
     if (!insights.readyToBuy && results.affordability) {
-      if (results.affordability.debtToIncomeRatio > 36) {
+      if (results.affordability.debtToIncomeRatio > FINANCIAL_CONSTANTS.MAX_DEBT_TO_INCOME_RATIO) {
         insights.recommendations.unshift('Consider reducing debt before buying');
       }
     }

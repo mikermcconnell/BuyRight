@@ -247,10 +247,10 @@ export default function StepDetailPage() {
             <div className="flex items-center justify-between mb-6">
               <h2 className="duolingo-title flex items-center">
                 <span className="text-2xl mr-3">✅</span>
-                Checklist
+                Let's Check These Off!
               </h2>
               <span className="text-lg font-bold" style={{ color: 'var(--duolingo-green)' }}>
-                {Math.round(checklistProgress)}%
+                {Math.round(checklistProgress)}% Done
               </span>
             </div>
 

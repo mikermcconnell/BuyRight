@@ -33,10 +33,10 @@ export default function MortgageTypesGuide() {
               <span className="text-3xl">📖</span>
             </div>
             <h1 className="text-3xl font-bold text-gray-900 mb-4">
-              Complete Mortgage Types Guide
+              🏦 Which Home Loan is Right for You?
             </h1>
             <p className="text-gray-600 text-lg max-w-2xl mx-auto">
-              Understanding mortgage types, programs, and requirements for first-time buyers in {currentRegion === 'ON' ? 'Ontario, Canada' : currentRegion === 'BC' ? 'British Columbia, Canada' : 'the United States'}.
+              Let's break down the different types of home loans in simple terms so you can pick the best one for your situation!
             </p>
             
             {/* Region Indicator */}

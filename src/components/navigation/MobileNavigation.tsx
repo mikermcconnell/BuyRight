@@ -114,10 +114,6 @@ export default function MobileNavigation() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, [lastScrollY, shouldHideNavigation]);
 
-  if (shouldHideNavigation) {
-    return null;
-  }
-
   // Filter nav items based on user state and complexity mode
   const filteredNavItems = navItems.filter(item => {
     if (item.requiresAuth && !user) return false;
@@ -144,6 +140,12 @@ export default function MobileNavigation() {
       setSelectedIndex(activeIndex);
     }
   }, [pathname, displayItems, shouldHideNavigation]);
+
+  // Early return after all hooks have been called
+  if (shouldHideNavigation) {
+    return null;
+  }
+
   const handlePan = (event: any, info: PanInfo) => {
     const { offset } = info;
     

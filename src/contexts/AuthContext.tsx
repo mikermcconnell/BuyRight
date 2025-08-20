@@ -54,7 +54,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
         const { data: { session }, error } = await supabaseClient.auth.getSession();
         
         if (error) {
-          authLogger.error('Session error:', error);
+          authLogger.error('Session error', error instanceof Error ? error : new Error(String(error)));
           setLoading(false);
           return;
         }
@@ -118,7 +118,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
             }
             setProfile(userProfile);
           } catch (profileError) {
-            authLogger.error('Error handling profile on sign in:', profileError);
+            authLogger.error('Error handling profile on sign in', profileError instanceof Error ? profileError : new Error(String(profileError)));
           }
         } else if (event === 'SIGNED_OUT') {
           setUser(null);
@@ -171,7 +171,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
       });
 
       if (error) {
-        authLogger.error('Sign in error:', error);
+        authLogger.error('Sign in error', error instanceof Error ? error : new Error(String(error)));
         return {
           success: false,
           error: getSupabaseAuthErrorMessage(error),
@@ -196,7 +196,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
         nextStep,
       };
     } catch (error) {
-      authLogger.error('Unexpected sign in error:', error);
+      authLogger.error('Unexpected sign in error', error instanceof Error ? error : new Error(String(error)));
       return {
         success: false,
         error: 'An unexpected error occurred',
@@ -243,14 +243,14 @@ export function AuthProvider({ children }: AuthProviderProps) {
       });
 
       if (error) {
-        authLogger.error('Sign up error:', error);
+        authLogger.error('Sign up error', error instanceof Error ? error : new Error(String(error)));
         return {
           success: false,
           error: getSupabaseAuthErrorMessage(error),
         };
       }
 
-      const needsConfirmation = !data.session && data.user && !data.user.email_confirmed_at;
+      const needsConfirmation = !data.session && data.user && !data.user.email_confirmed_at ? true : false;
       
       authLogger.info('Sign up successful', { 
         userId: data.user?.id, 
@@ -262,7 +262,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
         needsConfirmation,
       };
     } catch (error) {
-      authLogger.error('Unexpected sign up error:', error);
+      authLogger.error('Unexpected sign up error', error instanceof Error ? error : new Error(String(error)));
       return {
         success: false,
         error: 'An unexpected error occurred',
@@ -278,7 +278,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
       const { error } = await supabaseClient.auth.signOut();
       
       if (error) {
-        authLogger.error('Sign out error:', error);
+        authLogger.error('Sign out error', error instanceof Error ? error : new Error(String(error)));
         return {
           success: false,
           error: getSupabaseAuthErrorMessage(error),
@@ -293,7 +293,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
       return { success: true };
     } catch (error) {
-      authLogger.error('Unexpected sign out error:', error);
+      authLogger.error('Unexpected sign out error', error instanceof Error ? error : new Error(String(error)));
       return {
         success: false,
         error: 'An unexpected error occurred',
@@ -310,7 +310,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
       const userProfile = await supabaseService.getProfile(user.id);
       setProfile(userProfile);
     } catch (error) {
-      authLogger.error('Error refreshing profile:', error);
+      authLogger.error('Error refreshing profile', error instanceof Error ? error : new Error(String(error)));
     }
   };
 
@@ -339,7 +339,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
         };
       }
     } catch (error) {
-      authLogger.error('Update profile error:', error);
+      authLogger.error('Update profile error', error instanceof Error ? error : new Error(String(error)));
       return {
         success: false,
         error: 'An unexpected error occurred',

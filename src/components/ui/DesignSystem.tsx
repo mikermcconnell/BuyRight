@@ -1,7 +1,6 @@
 'use client';
 
 import React from 'react';
-import { motion } from 'framer-motion';
 import { cva, type VariantProps } from 'class-variance-authority';
 import { cn } from '@/lib/utils';
 
@@ -45,20 +44,17 @@ interface ButtonProps
 export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
   ({ className, variant, size, loading, children, disabled, ...props }, ref) => {
     return (
-      <motion.button
+      <button
         className={cn(buttonVariants({ variant, size, className }))}
         ref={ref}
         disabled={loading || disabled}
-        whileTap={{ scale: 0.98 }}
-        whileHover={{ scale: 1.02 }}
-        transition={{ duration: 0.1 }}
         {...props}
       >
         {loading && (
           <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
         )}
         {children}
-      </motion.button>
+      </button>
     );
   }
 );
@@ -130,7 +126,7 @@ const inputVariants = cva(
 );
 
 interface InputProps
-  extends React.InputHTMLAttributes<HTMLInputElement>,
+  extends Omit<React.InputHTMLAttributes<HTMLInputElement>, 'size'>,
     VariantProps<typeof inputVariants> {}
 
 export const Input = React.forwardRef<HTMLInputElement, InputProps>(
@@ -228,11 +224,9 @@ export function Progress({
         </div>
       )}
       <div className={`w-full bg-surface-tertiary rounded-full overflow-hidden ${sizeClasses[size]}`}>
-        <motion.div
-          className={`h-full bg-gradient-to-r ${variantClasses[variant]} rounded-full shadow-sm`}
-          initial={{ width: 0 }}
-          animate={{ width: `${percentage}%` }}
-          transition={{ duration: 0.8, ease: "easeOut" }}
+        <div
+          className={`h-full bg-gradient-to-r ${variantClasses[variant]} rounded-full shadow-sm transition-all duration-700 ease-out`}
+          style={{ width: `${percentage}%` }}
         />
       </div>
     </div>

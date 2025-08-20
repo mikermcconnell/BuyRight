@@ -22,6 +22,10 @@ import {
 } from '@/lib/regionalOptimized';
 // Removed AuthContext dependency
 import { FINANCIAL_CONSTANTS } from '@/lib/constants';
+import { logger } from '@/lib/logger';
+
+// Create regional-specific logger
+const regionalLogger = logger.createDomainLogger('RegionalContext');
 
 interface RegionalContextType extends RegionalContextState {
   // Actions
@@ -63,7 +67,7 @@ export function RegionalProvider({ children, defaultRegion }: RegionalProviderPr
     
     // Preload common regions for better performance
     preloadCommonRegions().catch(error =>
-      console.warn('Regional preloading failed:', error)
+      regionalLogger.warn('Regional preloading failed', { error })
     );
   }, [defaultRegion]);
 
@@ -110,7 +114,7 @@ export function RegionalProvider({ children, defaultRegion }: RegionalProviderPr
         }));
       }
     } catch (error) {
-      console.error('Error initializing regional context:', error);
+      regionalLogger.error('Error initializing regional context', error instanceof Error ? error : new Error(String(error)));
       setState(prev => ({
         ...prev,
         loading: false,
@@ -144,7 +148,7 @@ export function RegionalProvider({ children, defaultRegion }: RegionalProviderPr
             localStorage.setItem('buyright_profile', JSON.stringify(profile));
           }
         } catch (profileError) {
-          console.error('Failed to update user profile with new region:', profileError);
+          regionalLogger.error('Failed to update user profile with new region', profileError instanceof Error ? profileError : new Error(String(profileError)));
           // Don't fail the region change if profile update fails
         }
 
@@ -158,7 +162,7 @@ export function RegionalProvider({ children, defaultRegion }: RegionalProviderPr
         return false;
       }
     } catch (error) {
-      console.error('Error changing region:', error);
+      regionalLogger.error('Error changing region', error instanceof Error ? error : new Error(String(error)));
       setState(prev => ({
         ...prev,
         loading: false,
@@ -191,7 +195,7 @@ export function RegionalProvider({ children, defaultRegion }: RegionalProviderPr
         }));
       }
     } catch (error) {
-      console.error('Error refreshing regional content:', error);
+      regionalLogger.error('Error refreshing regional content', error instanceof Error ? error : new Error(String(error)));
       setState(prev => ({
         ...prev,
         loading: false,
@@ -232,9 +236,9 @@ export function RegionalProvider({ children, defaultRegion }: RegionalProviderPr
   const preloadRegions = async () => {
     try {
       await preloadCommonRegions();
-      console.log('Regional preloading completed successfully');
+      regionalLogger.info('Regional preloading completed successfully');
     } catch (error) {
-      console.error('Failed to preload regions:', error);
+      regionalLogger.error('Failed to preload regions', error instanceof Error ? error : new Error(String(error)));
     }
   };
 

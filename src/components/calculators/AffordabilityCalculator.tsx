@@ -24,6 +24,10 @@ import {
   WrenchScrewdriverIcon,
 } from '@heroicons/react/24/outline';
 import BuyRightLogo from '@/components/ui/BuyRightLogo';
+import { logger } from '@/lib/logger';
+
+// Create calculator-specific logger
+const calculatorLogger = logger.createDomainLogger('AffordabilityCalculator');
 
 interface ClosingCost {
   id: string;
@@ -283,10 +287,8 @@ const AffordabilityCalculator = React.memo(function AffordabilityCalculator({
         totalCashRequired: affordabilityResult.totalCashRequired
       });
     } catch (error) {
-      // Only log errors in development
-      if (process.env.NODE_ENV === 'development') {
-        console.error('Affordability calculation error:', error);
-      }
+      // Log calculation errors
+      calculatorLogger.error('Affordability calculation error', error instanceof Error ? error : new Error(String(error)));
       
       // Set generic error for user
       setErrors({ general: 'An error occurred during calculation. Please check your inputs and try again.' });
@@ -591,7 +593,7 @@ const AffordabilityCalculator = React.memo(function AffordabilityCalculator({
       // Navigate to dashboard after saving
       router.push('/dashboard');
     } catch (error) {
-      console.error('Error saving calculation:', error);
+      calculatorLogger.error('Error saving calculation', error instanceof Error ? error : new Error(String(error)));
       // Navigate to dashboard even if save fails
       router.push('/dashboard');
     }

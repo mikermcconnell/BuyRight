@@ -17,6 +17,10 @@ import {
   ChartBarIcon,
   CurrencyDollarIcon,
 } from '@heroicons/react/24/outline';
+import { logger } from '@/lib/logger';
+
+// Create calculator-specific logger
+const calculatorLogger = logger.createDomainLogger('MortgageCalculator');
 
 interface MortgageCalculation {
   monthlyPayment: number;
@@ -199,10 +203,8 @@ export default function MortgageCalculator({
         paymentBreakdown: mortgageCalculation.paymentBreakdown
       });
     } catch (error) {
-      // Only log errors in development
-      if (process.env.NODE_ENV === 'development') {
-        console.error('Mortgage calculation error:', error);
-      }
+      // Log calculation errors
+      calculatorLogger.error('Mortgage calculation error', error instanceof Error ? error : new Error(String(error)));
       
       // Set generic error for user
       setErrors({ general: 'An error occurred during calculation. Please check your inputs and try again.' });
@@ -293,7 +295,7 @@ export default function MortgageCalculator({
       // In a real app, you might want to handle errors differently
       router.back();
     } catch (error) {
-      console.error('Error saving calculation:', error);
+      calculatorLogger.error('Error saving calculation', error instanceof Error ? error : new Error(String(error)));
       // Still navigate back even if save fails
       router.back();
     }

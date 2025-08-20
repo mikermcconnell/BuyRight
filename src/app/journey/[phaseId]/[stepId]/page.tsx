@@ -9,6 +9,122 @@ import MobileStepNavigation from '@/components/journey/MobileStepNavigation';
 import { MobileGestureProvider } from '@/components/journey/MobileGestureProvider';
 import { CalculatorIntegrationService } from '@/lib/calculatorIntegration';
 
+// Checklist item guide mappings - data-driven approach to avoid repetition
+const CHECKLIST_GUIDE_LINKS: Record<string, { path: string; icon: string; label: string; color: string }> = {
+  'compare-rates': { 
+    path: '/resources/interest-rates', 
+    icon: '📊', 
+    label: 'Complete Rate Comparison Guide', 
+    color: 'blue' 
+  },
+  'understand-mortgage-types': { 
+    path: '/guides/mortgage-types', 
+    icon: '📖', 
+    label: 'Read Complete Mortgage Types Guide', 
+    color: 'green' 
+  },
+  'use-mortgage-calculator': { 
+    path: '/calculators/mortgage', 
+    icon: '🧮', 
+    label: 'Open Mortgage Calculator', 
+    color: 'purple' 
+  },
+  'check-first-time-programs': { 
+    path: '/guides/first-time-buyer-programs', 
+    icon: '🏠', 
+    label: 'View First-Time Buyer Programs Guide', 
+    color: 'blue' 
+  },
+  'gather-documents': { 
+    path: '/guides/pre-approval-documents', 
+    icon: '📋', 
+    label: 'View Complete Document Checklist', 
+    color: 'green' 
+  },
+  'reach-out-to-agents': { 
+    path: '/guides/selecting-real-estate-agent', 
+    icon: '🏘️', 
+    label: 'Agent Selection Guide', 
+    color: 'blue' 
+  },
+  'define-criteria': { 
+    path: '/guides/property-features-priority', 
+    icon: '⭐', 
+    label: 'Property Priority Guide', 
+    color: 'purple' 
+  },
+  'diy-market-research': { 
+    path: '/guides/diy-market-research', 
+    icon: '📊', 
+    label: 'DIY Research Guide', 
+    color: 'orange' 
+  },
+  'tour-homes': { 
+    path: '/guides/property-features-priority#scoring', 
+    icon: '⭐', 
+    label: 'Property Scoring Tool', 
+    color: 'green' 
+  },
+  'assess-property-value': { 
+    path: '/guides/property-value-assessment', 
+    icon: '💰', 
+    label: 'Property Value Assessment Guide', 
+    color: 'blue' 
+  },
+  'determine-offer-price': { 
+    path: '/guides/offer-negotiation-strategy', 
+    icon: '🤝', 
+    label: 'Offer Strategy Guide', 
+    color: 'green' 
+  },
+  'include-conditions': { 
+    path: '/guides/offer-conditions', 
+    icon: '🛡️', 
+    label: 'Conditions Guide', 
+    color: 'purple' 
+  },
+  'submit-offer': { 
+    path: '/guides/offer-submission-timeline', 
+    icon: '⏰', 
+    label: 'Timeline Guide', 
+    color: 'red' 
+  },
+  'test-utilities': { 
+    path: '/guides/final-walkthrough-checklist', 
+    icon: '✅', 
+    label: 'Walkthrough Checklist', 
+    color: 'green' 
+  },
+  'attend-inspection': { 
+    path: '/guides/home-inspection-questions', 
+    icon: '👁️', 
+    label: 'Inspection Questions Guide', 
+    color: 'orange' 
+  }
+};
+
+// Helper function to get button text based on completion status
+const getCompletionButtonText = (
+  isReady: boolean,
+  checklistProgress: number,
+  hasRequiredCalcs: boolean | undefined,
+  calcsComplete: boolean
+): string => {
+  if (isReady) return 'Complete Step 🎉';
+  if (checklistProgress < 100) return 'Complete Checklist First';
+  if (hasRequiredCalcs && !calcsComplete) return 'Complete Required Calculators';
+  return 'Complete Requirements First';
+};
+
+// Style constants to avoid inline style repetition
+const DUOLINGO_STYLES = {
+  greenText: { color: 'var(--duolingo-green)' },
+  progressBar: (progress: number) => ({
+    width: `${progress}%`,
+    backgroundColor: 'var(--duolingo-green)'
+  })
+};
+
 export default function StepDetailPage() {
   const params = useParams();
   const router = useRouter();
@@ -266,7 +382,7 @@ export default function StepDetailPage() {
                 <span className="text-2xl mr-3">✅</span>
                 Let's Check These Off!
               </h2>
-              <span className="text-lg font-bold" style={{ color: 'var(--duolingo-green)' }}>
+              <span className="text-lg font-bold" style={DUOLINGO_STYLES.greenText}>
                 {Math.round(checklistProgress)}% Done
               </span>
             </div>
@@ -276,10 +392,7 @@ export default function StepDetailPage() {
               <div className="w-full h-3 bg-gray-200 rounded-full overflow-hidden">
                 <div 
                   className="h-full rounded-full transition-all duration-500 ease-out"
-                  style={{ 
-                    width: `${checklistProgress}%`,
-                    backgroundColor: 'var(--duolingo-green)'
-                  }}
+                  style={DUOLINGO_STYLES.progressBar(checklistProgress)}
                 ></div>
               </div>
               <div className="text-center mt-2 text-sm text-gray-600">
@@ -328,242 +441,18 @@ export default function StepDetailPage() {
                         </p>
                       )}
                       
-                      {/* Special link for compare-rates item */}
-                      {item.id === 'compare-rates' && (
+                      {/* Guide link for checklist items - clean data-driven approach */}
+                      {CHECKLIST_GUIDE_LINKS[item.id] && (
                         <div className="mt-2">
                           <button
                             onClick={(e) => {
                               e.stopPropagation();
-                              router.push('/resources/interest-rates');
+                              router.push(CHECKLIST_GUIDE_LINKS[item.id].path);
                             }}
-                            className="text-xs bg-blue-100 hover:bg-blue-200 text-blue-700 px-3 py-1.5 rounded-full font-medium transition-all duration-200 flex items-center space-x-1"
+                            className={`text-xs bg-${CHECKLIST_GUIDE_LINKS[item.id].color}-100 hover:bg-${CHECKLIST_GUIDE_LINKS[item.id].color}-200 text-${CHECKLIST_GUIDE_LINKS[item.id].color}-700 px-3 py-1.5 rounded-full font-medium transition-all duration-200 flex items-center space-x-1`}
                           >
-                            <span>📊</span>
-                            <span>Complete Rate Comparison Guide</span>
-                          </button>
-                        </div>
-                      )}
-                      
-                      {/* Special link for understand-mortgage-types item */}
-                      {item.id === 'understand-mortgage-types' && (
-                        <div className="mt-2">
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              router.push('/guides/mortgage-types');
-                            }}
-                            className="text-xs bg-green-100 hover:bg-green-200 text-green-700 px-3 py-1.5 rounded-full font-medium transition-all duration-200 flex items-center space-x-1"
-                          >
-                            <span>📖</span>
-                            <span>Read Complete Mortgage Types Guide</span>
-                          </button>
-                        </div>
-                      )}
-                      
-                      {/* Special link for use-mortgage-calculator item */}
-                      {item.id === 'use-mortgage-calculator' && (
-                        <div className="mt-2">
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              router.push('/calculators/mortgage');
-                            }}
-                            className="text-xs bg-purple-100 hover:bg-purple-200 text-purple-700 px-3 py-1.5 rounded-full font-medium transition-all duration-200 flex items-center space-x-1"
-                          >
-                            <span>🧮</span>
-                            <span>Open Mortgage Calculator</span>
-                          </button>
-                        </div>
-                      )}
-                      
-                      {/* Special link for check-first-time-programs item */}
-                      {item.id === 'check-first-time-programs' && (
-                        <div className="mt-2">
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              router.push('/guides/first-time-buyer-programs');
-                            }}
-                            className="text-xs bg-blue-100 hover:bg-blue-200 text-blue-700 px-3 py-1.5 rounded-full font-medium transition-all duration-200 flex items-center space-x-1"
-                          >
-                            <span>🏠</span>
-                            <span>View First-Time Buyer Programs Guide</span>
-                          </button>
-                        </div>
-                      )}
-                      
-                      {/* Special link for gather-documents item */}
-                      {item.id === 'gather-documents' && (
-                        <div className="mt-2">
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              router.push('/guides/pre-approval-documents');
-                            }}
-                            className="text-xs bg-green-100 hover:bg-green-200 text-green-700 px-3 py-1.5 rounded-full font-medium transition-all duration-200 flex items-center space-x-1"
-                          >
-                            <span>📋</span>
-                            <span>View Complete Document Checklist</span>
-                          </button>
-                        </div>
-                      )}
-                      
-                      {/* Special link for reach-out-to-agents item */}
-                      {item.id === 'reach-out-to-agents' && (
-                        <div className="mt-2">
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              router.push('/guides/selecting-real-estate-agent');
-                            }}
-                            className="text-xs bg-blue-100 hover:bg-blue-200 text-blue-700 px-3 py-1.5 rounded-full font-medium transition-all duration-200 flex items-center space-x-1"
-                          >
-                            <span>🏘️</span>
-                            <span>Agent Selection Guide</span>
-                          </button>
-                        </div>
-                      )}
-                      
-                      {/* Special link for define-criteria item */}
-                      {item.id === 'define-criteria' && (
-                        <div className="mt-2">
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              router.push('/guides/property-features-priority');
-                            }}
-                            className="text-xs bg-purple-100 hover:bg-purple-200 text-purple-700 px-3 py-1.5 rounded-full font-medium transition-all duration-200 flex items-center space-x-1"
-                          >
-                            <span>⭐</span>
-                            <span>Property Priority Guide</span>
-                          </button>
-                        </div>
-                      )}
-                      
-                      {/* Special link for diy-market-research item */}
-                      {item.id === 'diy-market-research' && (
-                        <div className="mt-2">
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              router.push('/guides/diy-market-research');
-                            }}
-                            className="text-xs bg-orange-100 hover:bg-orange-200 text-orange-700 px-3 py-1.5 rounded-full font-medium transition-all duration-200 flex items-center space-x-1"
-                          >
-                            <span>📊</span>
-                            <span>DIY Research Guide</span>
-                          </button>
-                        </div>
-                      )}
-                      
-                      {/* Special link for tour-homes item */}
-                      {item.id === 'tour-homes' && (
-                        <div className="mt-2">
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              router.push('/guides/property-features-priority#scoring');
-                            }}
-                            className="text-xs bg-green-100 hover:bg-green-200 text-green-700 px-3 py-1.5 rounded-full font-medium transition-all duration-200 flex items-center space-x-1"
-                          >
-                            <span>⭐</span>
-                            <span>Property Scoring Tool</span>
-                          </button>
-                        </div>
-                      )}
-                      
-                      {/* Special link for assess-property-value item */}
-                      {item.id === 'assess-property-value' && (
-                        <div className="mt-2">
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              router.push('/guides/property-value-assessment');
-                            }}
-                            className="text-xs bg-blue-100 hover:bg-blue-200 text-blue-700 px-3 py-1.5 rounded-full font-medium transition-all duration-200 flex items-center space-x-1"
-                          >
-                            <span>💰</span>
-                            <span>Property Value Assessment Guide</span>
-                          </button>
-                        </div>
-                      )}
-                      
-                      {/* Special link for determine-offer-price item */}
-                      {item.id === 'determine-offer-price' && (
-                        <div className="mt-2">
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              router.push('/guides/offer-negotiation-strategy');
-                            }}
-                            className="text-xs bg-green-100 hover:bg-green-200 text-green-700 px-3 py-1.5 rounded-full font-medium transition-all duration-200 flex items-center space-x-1"
-                          >
-                            <span>🤝</span>
-                            <span>Offer Strategy Guide</span>
-                          </button>
-                        </div>
-                      )}
-                      
-                      {/* Special link for include-conditions item */}
-                      {item.id === 'include-conditions' && (
-                        <div className="mt-2">
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              router.push('/guides/offer-conditions');
-                            }}
-                            className="text-xs bg-purple-100 hover:bg-purple-200 text-purple-700 px-3 py-1.5 rounded-full font-medium transition-all duration-200 flex items-center space-x-1"
-                          >
-                            <span>🛡️</span>
-                            <span>Conditions Guide</span>
-                          </button>
-                        </div>
-                      )}
-                      
-                      {/* Special link for submit-offer item */}
-                      {item.id === 'submit-offer' && (
-                        <div className="mt-2">
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              router.push('/guides/offer-submission-timeline');
-                            }}
-                            className="text-xs bg-red-100 hover:bg-red-200 text-red-700 px-3 py-1.5 rounded-full font-medium transition-all duration-200 flex items-center space-x-1"
-                          >
-                            <span>⏰</span>
-                            <span>Timeline Guide</span>
-                          </button>
-                        </div>
-                      )}
-                      
-                      {/* Special link for test-utilities item */}
-                      {item.id === 'test-utilities' && (
-                        <div className="mt-2">
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              router.push('/guides/final-walkthrough-checklist');
-                            }}
-                            className="text-xs bg-green-100 hover:bg-green-200 text-green-700 px-3 py-1.5 rounded-full font-medium transition-all duration-200 flex items-center space-x-1"
-                          >
-                            <span>✅</span>
-                            <span>Walkthrough Checklist</span>
-                          </button>
-                        </div>
-                      )}
-                      
-                      {/* Special link for attend-inspection item */}
-                      {item.id === 'attend-inspection' && (
-                        <div className="mt-2">
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              router.push('/guides/home-inspection-questions');
-                            }}
-                            className="text-xs bg-orange-100 hover:bg-orange-200 text-orange-700 px-3 py-1.5 rounded-full font-medium transition-all duration-200 flex items-center space-x-1"
-                          >
-                            <span>👁️</span>
-                            <span>Inspection Questions Guide</span>
+                            <span>{CHECKLIST_GUIDE_LINKS[item.id].icon}</span>
+                            <span>{CHECKLIST_GUIDE_LINKS[item.id].label}</span>
                           </button>
                         </div>
                       )}
@@ -702,15 +591,12 @@ export default function StepDetailPage() {
                     ${!stepReadyForCompletion ? 'opacity-50 cursor-not-allowed' : ''}
                   `}
                 >
-                  {!stepReadyForCompletion 
-                    ? (checklistProgress < 100 
-                        ? 'Complete Checklist First' 
-                        : hasRequiredCalculators && !calculatorsComplete 
-                          ? 'Complete Required Calculators' 
-                          : 'Complete Requirements First'
-                      )
-                    : 'Complete Step 🎉'
-                  }
+                  {getCompletionButtonText(
+                    stepReadyForCompletion,
+                    checklistProgress,
+                    hasRequiredCalculators,
+                    calculatorsComplete
+                  )}
                 </button>
                 
                 {/* Next Phase Information */}

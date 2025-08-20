@@ -855,7 +855,7 @@ function SecurityTab({ user, profile, onSave, loading }: {
           <div>
             <dt className="text-sm font-medium text-gray-500">Account Created</dt>
             <dd className="text-sm text-gray-900">
-              {user.created_at ? new Date(user.created_at).toLocaleDateString() : 'N/A'}
+              {(user as any).created_at ? new Date((user as any).created_at).toLocaleDateString() : 'N/A'}
             </dd>
           </div>
           <div>

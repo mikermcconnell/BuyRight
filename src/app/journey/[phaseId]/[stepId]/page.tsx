@@ -5,6 +5,8 @@ import { useParams, useRouter } from 'next/navigation';
 import { useJourney, useJourneyProgress, useCurrentStep } from '@/contexts/JourneyContext';
 import { JourneyStep, JourneyPhase, ChecklistItem } from '@/types/regional';
 import CalculatorWidget from '@/components/journey/CalculatorWidget';
+import MobileStepNavigation from '@/components/journey/MobileStepNavigation';
+import { MobileGestureProvider } from '@/components/journey/MobileGestureProvider';
 import { CalculatorIntegrationService } from '@/lib/calculatorIntegration';
 
 export default function StepDetailPage() {
@@ -28,6 +30,7 @@ export default function StepDetailPage() {
   const [currentPhase, setCurrentPhase] = useState<JourneyPhase | null>(null);
   const [notes, setNotes] = useState('');
   const [startTime, setStartTime] = useState<Date | null>(null);
+  const [isMobileView, setIsMobileView] = useState(false);
 
   useEffect(() => {
     // Find the step in the phases
@@ -56,6 +59,19 @@ export default function StepDetailPage() {
       router.push('/dashboard');
     }
   }, [phases, phaseId, stepId, loading, router, progress, startTime]);
+
+  // Mobile detection
+  useEffect(() => {
+    const checkMobile = () => {
+      const isMobile = window.innerWidth <= 768 || /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+      setIsMobileView(isMobile);
+    };
+    
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   if (loading) {
     return (
@@ -165,8 +181,9 @@ export default function StepDetailPage() {
   const nextPhaseInfo = getNextPhaseInfo();
 
   return (
-    <div className="duolingo-container min-h-screen py-8">
-      <div className="w-full max-w-4xl">
+    <MobileGestureProvider initialConfig={{ hapticFeedback: isMobileView }}>
+      <div className="duolingo-container min-h-screen py-8">
+        <div className="w-full max-w-4xl">
         {/* Breadcrumb Navigation */}
         <nav className="mb-6">
           <div className="flex items-center space-x-2 text-sm text-gray-600">
@@ -758,7 +775,18 @@ export default function StepDetailPage() {
             </button>
           )}
         </div>
+        
+        {/* Mobile Step Navigation */}
+        {isMobileView && currentStep && (
+          <MobileStepNavigation 
+            currentStepId={stepId}
+            enableGestures={true}
+            showMiniMap={true}
+            autoHide={true}
+          />
+        )}
       </div>
     </div>
+    </MobileGestureProvider>
   );
 }

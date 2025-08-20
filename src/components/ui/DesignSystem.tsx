@@ -5,10 +5,7 @@ import { motion } from 'framer-motion';
 import { cva, type VariantProps } from 'class-variance-authority';
 import { cn } from '@/lib/utils';
 
-// Design System Utility - Create if not exists
-export function cn(...classes: any[]) {
-  return classes.filter(Boolean).join(' ');
-}
+// Design System Utility - Using imported cn from utils
 
 // Enterprise Button Component
 const buttonVariants = cva(

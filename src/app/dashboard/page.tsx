@@ -5,6 +5,8 @@ import { useRouter } from 'next/navigation';
 import { useJourney, useJourneyProgress } from '@/contexts/JourneyContext';
 import { CalculatorIntegrationService } from '@/lib/calculatorIntegration';
 import CalculatorWidget from '@/components/journey/CalculatorWidget';
+import MobileProgressTracker from '@/components/journey/MobileProgressTracker';
+import { MobileGestureProvider } from '@/components/journey/MobileGestureProvider';
 import { UserProfile, DashboardInsights } from '@/types/profile';
 import { journeyLogger, logError, logInfo } from '@/lib/logger';
 import Header from '@/components/navigation/Header';
@@ -18,6 +20,8 @@ function Dashboard() {
   const [initialLoading, setInitialLoading] = useState(true);
   const [showResetConfirm, setShowResetConfirm] = useState(false);
   const [calculatorInsights, setCalculatorInsights] = useState<DashboardInsights | null>(null);
+  const [isMobileView, setIsMobileView] = useState(false);
+  const [showMobileTracker, setShowMobileTracker] = useState(true);
   
   // Use journey context
   const { 
@@ -104,7 +108,18 @@ function Dashboard() {
     // Use memoized calculator insights
     setCalculatorInsights(calculatorInsightsMemo);
     
+    // Detect mobile device
+    const checkMobile = () => {
+      const isMobile = window.innerWidth <= 768 || /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+      setIsMobileView(isMobile);
+    };
+    
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    
     setInitialLoading(false);
+    
+    return () => window.removeEventListener('resize', checkMobile);
   }, [calculatorInsightsMemo]);
 
   if (initialLoading || journeyLoading) {
@@ -161,17 +176,38 @@ function Dashboard() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header with User Menu */}
-      <Header 
-        title="Dashboard"
-        showLocation={true}
-        showNotifications={true}
-        showUserMenu={true}
-      />
-      
-      <div className="duolingo-container py-8">
-        <div className="w-full max-w-4xl">
+    <MobileGestureProvider initialConfig={{ hapticFeedback: isMobileView }}>
+      <div className="min-h-screen bg-gray-50">
+        {/* Header with User Menu */}
+        <Header 
+          title="Dashboard"
+          showLocation={true}
+          showNotifications={true}
+          showUserMenu={true}
+        />
+        
+        <div className="duolingo-container py-8">
+          <div className="w-full max-w-4xl">
+
+          {/* Mobile Progress Tracker - Shows on mobile devices */}
+          {isMobileView && showMobileTracker && (
+            <div className="mb-8">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-lg font-semibold text-gray-800">Your Journey</h2>
+                <button
+                  onClick={() => setShowMobileTracker(!showMobileTracker)}
+                  className="text-sm text-gray-500 hover:text-gray-700"
+                >
+                  {showMobileTracker ? 'Hide' : 'Show'} Tracker
+                </button>
+              </div>
+              <MobileProgressTracker 
+                showDetailed={false}
+                enableGestures={true}
+                compactMode={false}
+              />
+            </div>
+          )}
 
 
         {/* Welcome Section */}
@@ -579,6 +615,7 @@ function Dashboard() {
         </div>
       </div>
     </div>
+    </MobileGestureProvider>
   );
 }
 

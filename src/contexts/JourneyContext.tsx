@@ -198,7 +198,8 @@ function journeyReducer(state: JourneyContextState, action: JourneyAction): Jour
             startedAt: action.payload?.startedAt || new Date(),
             lastUpdated: new Date(),
             regionCode: action.payload?.regionCode || 'ON'
-          }
+          },
+          loading: false // Set loading to false when initial progress is loaded
         };
       }
 

@@ -108,6 +108,9 @@ export class CalculatorIntegrationService {
   // Get calculator results from storage
   static getResults(): CalculatorResults | null {
     try {
+      // Check if we're in a browser environment
+      if (typeof window === 'undefined') return null;
+      
       const saved = localStorage.getItem(this.STORAGE_KEY);
       if (saved) {
         const results = JSON.parse(saved);
@@ -143,6 +146,9 @@ export class CalculatorIntegrationService {
   // Save calculator results
   static saveResults(results: CalculatorResults): void {
     try {
+      // Check if we're in a browser environment
+      if (typeof window === 'undefined') return;
+      
       const toSave = {
         ...results,
         lastUpdated: new Date()
@@ -358,6 +364,9 @@ export class CalculatorIntegrationService {
   // Clear all calculator results
   static clearResults(): void {
     try {
+      // Check if we're in a browser environment
+      if (typeof window === 'undefined') return;
+      
       localStorage.removeItem(this.STORAGE_KEY);
     } catch (error) {
       console.error('Failed to clear calculator results:', error);

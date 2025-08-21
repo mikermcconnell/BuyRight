@@ -13,6 +13,7 @@ import Header from '@/components/navigation/Header';
 import { BuyRightHeader } from '@/components/ui/BuyRightLogo';
 import { withPageErrorBoundary } from '@/components/ui/PageErrorBoundary';
 import { UI_CONSTANTS } from '@/lib/constants';
+import JourneyCelebration from '@/components/celebration/JourneyCelebration';
 
 function Dashboard() {
   const router = useRouter();
@@ -36,7 +37,9 @@ function Dashboard() {
     isStepCompleted,
     isStepAvailable,
     resetProgress,
-    unlockAllSteps
+    unlockAllSteps,
+    showCelebration,
+    dismissCelebration
   } = useJourney();
   
   const { 
@@ -615,6 +618,13 @@ function Dashboard() {
         </div>
       </div>
     </div>
+    
+    {/* Journey Completion Celebration */}
+    <JourneyCelebration 
+      isVisible={showCelebration}
+      onClose={dismissCelebration}
+      stepTitle="Your Home Buying Journey"
+    />
     </MobileGestureProvider>
   );
 }

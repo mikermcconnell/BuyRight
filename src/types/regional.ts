@@ -228,6 +228,7 @@ export interface JourneyContextState {
   currentPhases: JourneyPhase[];
   loading: boolean;
   error: string | null;
+  showCelebration: boolean;
 }
 
 // Journey Engine Actions
@@ -238,4 +239,6 @@ export type JourneyAction =
   | { type: 'COMPLETE_CHECKLIST_ITEM'; payload: { stepId: string; checklistItemId: string } }
   | { type: 'UPDATE_PROGRESS'; payload: Partial<UserJourneyProgress> }
   | { type: 'SET_LOADING'; payload: boolean }
-  | { type: 'SET_ERROR'; payload: string | null };
+  | { type: 'SET_ERROR'; payload: string | null }
+  | { type: 'SHOW_CELEBRATION' }
+  | { type: 'DISMISS_CELEBRATION' };

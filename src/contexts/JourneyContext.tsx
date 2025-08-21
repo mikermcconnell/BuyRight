@@ -54,6 +54,10 @@ interface JourneyContextType extends JourneyContextState {
   resetProgress: () => void;
   unlockAllSteps: () => void;
   
+  // Celebration
+  showCelebration: boolean;
+  dismissCelebration: () => void;
+  
   // Utilities
   getStepProgress: (stepId: string) => StepProgress | null;
   isStepCompleted: (stepId: string) => boolean;
@@ -229,6 +233,18 @@ function journeyReducer(state: JourneyContextState, action: JourneyAction): Jour
         loading: false
       };
 
+    case 'SHOW_CELEBRATION':
+      return {
+        ...state,
+        showCelebration: true
+      };
+
+    case 'DISMISS_CELEBRATION':
+      return {
+        ...state,
+        showCelebration: false
+      };
+
     default:
       return state;
   }
@@ -240,7 +256,8 @@ const initialState: JourneyContextState = {
   userProgress: null,
   currentPhases: [],
   loading: true,
-  error: null
+  error: null,
+  showCelebration: false
 };
 
 const JourneyContext = createContext<JourneyContextType | undefined>(undefined);
@@ -515,6 +532,14 @@ export function JourneyProvider({ children }: JourneyProviderProps) {
         }
       );
       journeyLogger.info('Checklist item updated in Supabase', { stepId, checklistItemId, completed: newCompletedState });
+      
+      // Check if this is the "receive-keys" checklist item being completed for celebration
+      if (checklistItemId === 'receive-keys' && newCompletedState) {
+        journeyLogger.info('🎉 Receive keys completed - triggering celebration!');
+        setTimeout(() => {
+          dispatch({ type: 'SHOW_CELEBRATION' });
+        }, 1000); // Small delay to let the UI update first
+      }
     } catch (error) {
       journeyLogger.error('Failed to sync checklist completion with Supabase:', error as Error);
       // Continue with local state - the persistence service will handle offline sync
@@ -684,6 +709,10 @@ export function JourneyProvider({ children }: JourneyProviderProps) {
     return engine.getPreviousStep(state.userProgress.currentStepId);
   };
 
+  const dismissCelebration = () => {
+    dispatch({ type: 'DISMISS_CELEBRATION' });
+  };
+
   const value: JourneyContextType = {
     ...state,
     engine,
@@ -700,6 +729,7 @@ export function JourneyProvider({ children }: JourneyProviderProps) {
     setCurrentStep,
     resetProgress,
     unlockAllSteps,
+    dismissCelebration,
     getStepProgress,
     isStepCompleted,
     isStepAvailable,

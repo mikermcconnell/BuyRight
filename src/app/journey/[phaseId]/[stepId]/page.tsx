@@ -8,6 +8,7 @@ import CalculatorWidget from '@/components/journey/CalculatorWidget';
 import MobileStepNavigation from '@/components/journey/MobileStepNavigation';
 import { MobileGestureProvider } from '@/components/journey/MobileGestureProvider';
 import { CalculatorIntegrationService } from '@/lib/calculatorIntegration';
+import JourneyCelebration from '@/components/celebration/JourneyCelebration';
 
 // Checklist item guide mappings - data-driven approach to avoid repetition
 const CHECKLIST_GUIDE_LINKS: Record<string, { path: string; icon: string; label: string; color: string }> = {
@@ -138,7 +139,9 @@ export default function StepDetailPage() {
     completeChecklistItem,
     getNextStep,
     getPreviousStep,
-    getStepProgress
+    getStepProgress,
+    showCelebration,
+    dismissCelebration
   } = useJourney();
   
   const { step, progress, isCompleted, complete } = useCurrentStep();
@@ -673,6 +676,13 @@ export default function StepDetailPage() {
         )}
       </div>
     </div>
+    
+    {/* Journey Completion Celebration */}
+    <JourneyCelebration 
+      isVisible={showCelebration}
+      onClose={dismissCelebration}
+      stepTitle={currentStep?.title || 'Closing Day'}
+    />
     </MobileGestureProvider>
   );
 }

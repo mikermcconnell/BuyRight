@@ -4,7 +4,7 @@ import { createSupabaseRouteHandlerClient } from '@/lib/supabase-server';
 // GET /api/user/preferences - Get user preferences and settings
 export async function GET(request: NextRequest) {
   try {
-    const supabase = createSupabaseRouteHandlerClient();
+    const supabase = await createSupabaseRouteHandlerClient();
     
     const { data: { user }, error: authError } = await supabase.auth.getUser();
     if (authError || !user) {
@@ -54,7 +54,7 @@ export async function GET(request: NextRequest) {
         },
         display: {
           theme: 'light',
-          currency: profile?.location?.startsWith('US_') ? 'USD' : 'CAD',
+          currency: (profile as any)?.location?.startsWith('US_') ? 'USD' : 'CAD',
           language: 'en',
         },
       },
@@ -76,7 +76,7 @@ export async function GET(request: NextRequest) {
 // PUT /api/user/preferences - Update user preferences
 export async function PUT(request: NextRequest) {
   try {
-    const supabase = createSupabaseRouteHandlerClient();
+    const supabase = await createSupabaseRouteHandlerClient();
     
     const { data: { user }, error: authError } = await supabase.auth.getUser();
     if (authError || !user) {
@@ -109,7 +109,7 @@ export async function PUT(request: NextRequest) {
       if (budget_max !== undefined) updateData.budget_max = budget_max;
       if (home_type_preference) updateData.home_type_preference = home_type_preference;
 
-      const { error: updateError } = await supabase
+      const { error: updateError } = await (supabase as any)
         .from('user_profiles')
         .update(updateData)
         .eq('user_id', user.id);

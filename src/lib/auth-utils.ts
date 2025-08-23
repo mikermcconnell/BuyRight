@@ -30,7 +30,7 @@ export async function getAuthenticatedUser(request?: NextRequest): Promise<Authe
       };
     }
 
-    const supabase = createSupabaseRouteHandlerClient();
+    const supabase = await createSupabaseRouteHandlerClient();
     const { data: { user }, error } = await supabase.auth.getUser();
 
     if (error || !user) {
@@ -68,7 +68,7 @@ export async function getServerAuthenticatedUser(): Promise<AuthenticatedUser | 
       };
     }
 
-    const supabase = createSupabaseServerComponentClient();
+    const supabase = await createSupabaseServerComponentClient();
     const { data: { user }, error } = await supabase.auth.getUser();
 
     if (error || !user) {

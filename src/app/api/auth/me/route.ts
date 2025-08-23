@@ -5,7 +5,7 @@ import { SupabaseService } from '@/lib/supabase';
 // GET /api/auth/me - Get current user session
 export async function GET(request: NextRequest) {
   try {
-    const supabase = createSupabaseRouteHandlerClient();
+    const supabase = await createSupabaseRouteHandlerClient();
 
     // Get the current user session
     const { data: { user }, error } = await supabase.auth.getUser();

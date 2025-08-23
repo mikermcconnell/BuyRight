@@ -30,21 +30,16 @@ const publicRoutes = [
 export async function middleware(req: NextRequest) {
   const res = NextResponse.next()
   
-  console.log('🚀 MIDDLEWARE ENTRY:', req.nextUrl.pathname)
+  // Middleware entry point
   
   // Check if Supabase is configured
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
   
-  console.log('🔧 SUPABASE CONFIG CHECK:', {
-    hasUrl: !!supabaseUrl,
-    hasKey: !!supabaseAnonKey,
-    urlStartsWith: supabaseUrl?.startsWith('https://') ? 'https' : supabaseUrl?.substring(0, 10),
-    keyLength: supabaseAnonKey?.length || 0
-  })
+  // Verify Supabase configuration
   
   if (!supabaseUrl || !supabaseAnonKey) {
-    console.log('❌ MIDDLEWARE: Supabase not configured - allowing request')
+    // Supabase not configured - allowing request
     // In demo mode, allow all requests to proceed
     return res;
   }
@@ -56,11 +51,11 @@ export async function middleware(req: NextRequest) {
       cookies: {
         get(name: string) {
           const cookie = req.cookies.get(name)?.value
-          console.log(`🍪 Getting cookie ${name}:`, cookie ? 'present' : 'missing')
+          // Get cookie value
           return cookie
         },
         set(name: string, value: string, options: any) {
-          console.log(`🍪 Setting cookie ${name}`)
+          // Set cookie
           req.cookies.set({
             name,
             value,
@@ -73,7 +68,7 @@ export async function middleware(req: NextRequest) {
           })
         },
         remove(name: string, options: any) {
-          console.log(`🍪 Removing cookie ${name}`)
+          // Remove cookie
           req.cookies.set({
             name,
             value: '',
@@ -109,19 +104,10 @@ export async function middleware(req: NextRequest) {
       error,
     } = await supabase.auth.getSession()
 
-    console.log('🔍 MIDDLEWARE SESSION CHECK:', { 
-      path, 
-      hasError: !!error, 
-      errorMessage: error?.message,
-      hasSession: !!session, 
-      hasUser: !!session?.user,
-      userId: session?.user?.id,
-      sessionExpiry: session?.expires_at,
-      accessToken: session?.access_token ? 'present' : 'missing'
-    })
+    // Check session status
 
     if (error) {
-      console.error('❌ Middleware auth error:', error)
+      // Auth error occurred - let component handle it
       // On auth error, allow the request but let the component handle it
       return res
     }
@@ -132,12 +118,7 @@ export async function middleware(req: NextRequest) {
       const now = new Date()
       const timeUntilExpiry = expiryTime.getTime() - now.getTime()
       
-      console.log('🕐 SESSION EXPIRY CHECK:', {
-        expiryTime: expiryTime.toISOString(),
-        now: now.toISOString(),
-        timeUntilExpiryMinutes: Math.round(timeUntilExpiry / (1000 * 60)),
-        isExpired: timeUntilExpiry <= 0
-      })
+      // Check if session needs refresh
     }
 
     const isAuthenticated = !!session?.user
@@ -145,13 +126,7 @@ export async function middleware(req: NextRequest) {
     const isAuthRoute = authRoutes.some(route => path.startsWith(route))
     const isPublicRoute = publicRoutes.includes(path) || path === '/'
 
-    console.log('🔍 MIDDLEWARE DECISIONS:', { 
-      path, 
-      isAuthenticated, 
-      isProtectedRoute, 
-      isAuthRoute, 
-      isPublicRoute 
-    })
+    // Route protection logic
 
     // Handle protected routes
     if (isProtectedRoute && !isAuthenticated) {
@@ -176,7 +151,7 @@ export async function middleware(req: NextRequest) {
       }
       
       // Redirect based on onboarding status
-      const dashboardUrl = profile?.location ? '/dashboard' : '/onboarding'
+      const dashboardUrl = (profile && (profile as any).location) ? '/dashboard' : '/onboarding'
       return NextResponse.redirect(new URL(dashboardUrl, req.url))
     }
 
@@ -190,7 +165,7 @@ export async function middleware(req: NextRequest) {
           .eq('user_id', session.user.id)
           .single()
 
-        const dashboardUrl = profile?.location ? '/dashboard' : '/onboarding'
+        const dashboardUrl = (profile && (profile as any).location) ? '/dashboard' : '/onboarding'
         return NextResponse.redirect(new URL(dashboardUrl, req.url))
       }
       // For non-authenticated users, let them see the landing page
@@ -200,7 +175,7 @@ export async function middleware(req: NextRequest) {
     // Allow all other requests
     return res
   } catch (error) {
-    console.error('Middleware error:', error)
+    // Middleware error - allow request to proceed
     // On any error, allow the request to proceed
     return res
   }

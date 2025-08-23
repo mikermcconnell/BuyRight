@@ -96,7 +96,7 @@ export async function middleware(req: NextRequest) {
     } = await supabase.auth.getSession()
 
     if (error) {
-      console.error('Middleware auth error:', error)
+      // Auth error occurred - let component handle it
       // On auth error, allow the request but let the component handle it
       return res
     }
@@ -116,20 +116,26 @@ export async function middleware(req: NextRequest) {
     // Handle auth routes (redirect authenticated users away)
     if (isAuthRoute && isAuthenticated) {
       // Check if user has completed onboarding
-      const { data: profile } = await supabase
-        .from('user_profiles')
-        .select('location')
-        .eq('user_id', session.user.id)
-        .single()
+      let dashboardUrl = '/onboarding'
+      try {
+        const { data: profile } = await supabase
+          .from('user_profiles')
+          .select('location')
+          .eq('user_id', session.user.id)
+          .single()
+        
+        if (profile && (profile as any).location) {
+          dashboardUrl = '/dashboard'
+        }
+      } catch {
+        // If profile doesn't exist, redirect to onboarding
+      }
 
       const redirectTo = req.nextUrl.searchParams.get('redirectTo')
       
       if (redirectTo && protectedRoutes.some(route => redirectTo.startsWith(route))) {
         return NextResponse.redirect(new URL(redirectTo, req.url))
       }
-      
-      // Redirect based on onboarding status
-      const dashboardUrl = profile?.location ? '/dashboard' : '/onboarding'
       return NextResponse.redirect(new URL(dashboardUrl, req.url))
     }
 
@@ -137,13 +143,20 @@ export async function middleware(req: NextRequest) {
     if (path === '/') {
       if (isAuthenticated) {
         // Check onboarding status and redirect accordingly
-        const { data: profile } = await supabase
-          .from('user_profiles')
-          .select('location')
-          .eq('user_id', session.user.id)
-          .single()
-
-        const dashboardUrl = profile?.location ? '/dashboard' : '/onboarding'
+        let dashboardUrl = '/onboarding'
+        try {
+          const { data: profile } = await supabase
+            .from('user_profiles')
+            .select('location')
+            .eq('user_id', session.user.id)
+            .single()
+          
+          if (profile && (profile as any).location) {
+            dashboardUrl = '/dashboard'
+          }
+        } catch {
+          // If profile doesn't exist, redirect to onboarding
+        }
         return NextResponse.redirect(new URL(dashboardUrl, req.url))
       }
       // For non-authenticated users, let them see the landing page
@@ -153,7 +166,7 @@ export async function middleware(req: NextRequest) {
     // Allow all other requests
     return res
   } catch (error) {
-    console.error('Middleware error:', error)
+    // Middleware error - allow request to proceed
     // On any error, allow the request to proceed
     return res
   }

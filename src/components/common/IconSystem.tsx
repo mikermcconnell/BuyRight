@@ -308,8 +308,8 @@ export function AnimatedIcon({
 
   return (
     <motion.div
-      initial={animationVariants[animation].initial}
-      animate={animationVariants[animation].animate}
+      initial={animationVariants[animation].initial as any}
+      animate={animationVariants[animation].animate as any}
       className={className}
     >
       <Icon

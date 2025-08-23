@@ -4,7 +4,7 @@ import { createSupabaseRouteHandlerClient } from '@/lib/supabase-server';
 // POST /api/auth/logout
 export async function POST(request: NextRequest) {
   try {
-    const supabase = createSupabaseRouteHandlerClient();
+    const supabase = await createSupabaseRouteHandlerClient();
 
     // Sign out the user
     const { error } = await supabase.auth.signOut();

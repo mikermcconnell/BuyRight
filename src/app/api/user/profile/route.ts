@@ -4,7 +4,7 @@ import { createSupabaseRouteHandlerClient } from '@/lib/supabase-server';
 // GET /api/user/profile - Get user profile
 export async function GET(request: NextRequest) {
   try {
-    const supabase = createSupabaseRouteHandlerClient();
+    const supabase = await createSupabaseRouteHandlerClient();
     
     // Get user from session
     const { data: { user }, error: authError } = await supabase.auth.getUser();
@@ -74,7 +74,7 @@ export async function GET(request: NextRequest) {
 // PUT /api/user/profile - Update user profile
 export async function PUT(request: NextRequest) {
   try {
-    const supabase = createSupabaseRouteHandlerClient();
+    const supabase = await createSupabaseRouteHandlerClient();
     
     // Get user from session
     const { data: { user }, error: authError } = await supabase.auth.getUser();
@@ -181,7 +181,7 @@ export async function PUT(request: NextRequest) {
       updated_at: new Date().toISOString(),
     };
 
-    const { data: updatedProfile, error: updateError } = await supabase
+    const { data: updatedProfile, error: updateError } = await (supabase as any)
       .from('user_profiles')
       .upsert(profileData, { onConflict: 'user_id' })
       .select()

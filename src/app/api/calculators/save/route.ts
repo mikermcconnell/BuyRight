@@ -47,16 +47,14 @@ export async function POST(request: NextRequest) {
       const supabase = createSupabaseServiceClient();
       const result = await supabase
         .from('calculator_sessions')
-        .insert([
-          {
-            user_id: user.id,
-            calculator_type: calculatorType,
-            input_data: inputData,
-            results: results,
-            saved: true,
-            created_at: new Date().toISOString(),
-          },
-        ])
+        .insert({
+          user_id: user.id,
+          calculator_type: calculatorType,
+          input_data: inputData,
+          results: results,
+          saved: true,
+          created_at: new Date().toISOString(),
+        } as any)
         .select()
         .single();
 
@@ -86,9 +84,9 @@ export async function POST(request: NextRequest) {
       success: true,
       message: 'Calculation saved successfully',
       data: {
-        id: data.id,
-        calculatorType: data.calculator_type,
-        createdAt: data.created_at,
+        id: (data as any).id,
+        calculatorType: (data as any).calculator_type,
+        createdAt: (data as any).created_at,
       },
     });
   } catch (error) {
@@ -155,7 +153,7 @@ export async function GET(request: NextRequest) {
       });
     }
 
-    const formattedData = data.map(record => ({
+    const formattedData = data.map((record: any) => ({
       id: record.id,
       calculatorType: record.calculator_type,
       inputData: record.input_data,

@@ -13,17 +13,20 @@ const nextConfig = {
     ignoreDuringBuilds: process.env.NODE_ENV === 'production' && process.env.VERCEL_ENV === 'production',
   },
   
+  // External packages for server components
+  serverExternalPackages: ['@supabase/auth-helpers-nextjs'],
+  
   experimental: {
-    serverComponentsExternalPackages: ['@supabase/auth-helpers-nextjs'],
     // Enable faster builds and hot reload
     optimizePackageImports: ['@heroicons/react'],
-    // Turbopack configuration
-    turbo: {
-      rules: {
-        '*.svg': {
-          loaders: ['@svgr/webpack'],
-          as: '*.js',
-        },
+  },
+  
+  // Turbopack configuration
+  turbopack: {
+    rules: {
+      '*.svg': {
+        loaders: ['@svgr/webpack'],
+        as: '*.js',
       },
     },
   },
@@ -61,8 +64,6 @@ const nextConfig = {
   },
   // Compression and performance
   compress: true,
-  // Enable SWC minification
-  swcMinify: true,
   // Note: NEXT_PUBLIC_ environment variables are automatically exposed by Next.js
   // No need to explicitly expose them in the env config
 }

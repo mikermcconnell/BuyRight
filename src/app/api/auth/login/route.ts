@@ -20,7 +20,7 @@ export async function POST(request: NextRequest) {
   }
   
   try {
-    const supabase = createSupabaseRouteHandlerClient();
+    const supabase = await createSupabaseRouteHandlerClient();
     const body = await request.json();
     const { email, password } = body;
 

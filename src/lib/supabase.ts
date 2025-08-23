@@ -269,13 +269,16 @@ export class SupabaseService {
 
   // User Profile operations
   async createOrUpdateProfile(userId: string, profileData: Partial<UserProfileInsert>): Promise<UserProfile | null> {
+    const upsertData = {
+      user_id: userId,
+      location: 'ON', // Default location if not provided
+      ...profileData,
+      updated_at: new Date().toISOString(),
+    } as any; // Type assertion needed due to Supabase type generation issues
+    
     const { data, error } = await this.supabase
       .from('user_profiles')
-      .upsert({
-        user_id: userId,
-        ...profileData,
-        updated_at: new Date().toISOString(),
-      })
+      .upsert(upsertData)
       .select()
       .single();
 
@@ -357,7 +360,7 @@ export class SupabaseService {
         notes: notes || null,
         data: stepData || null,
         updated_at: new Date().toISOString(),
-      })
+      } as any)
       .select()
       .single();
 
@@ -427,7 +430,7 @@ export class SupabaseService {
         input_data: inputData,
         results: results,
         saved: saved,
-      })
+      } as any)
       .select()
       .single();
 

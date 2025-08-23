@@ -7,10 +7,10 @@ const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://placeholder
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'placeholder-key';
 
 // Server-side Supabase clients that use cookies from next/headers
-export function createSupabaseRouteHandlerClient() {
+export async function createSupabaseRouteHandlerClient() {
   // Note: This function should only be called during request handling,
   // not during build time. The caller should check isSupabaseAvailable() first.
-  const cookieStore = cookies();
+  const cookieStore = await cookies();
   
   return createServerClient<Database>(supabaseUrl, supabaseAnonKey, {
     cookies: {
@@ -27,10 +27,10 @@ export function createSupabaseRouteHandlerClient() {
   });
 }
 
-export function createSupabaseServerComponentClient() {
+export async function createSupabaseServerComponentClient() {
   // Note: This function should only be called during request handling,
   // not during build time. The caller should check isSupabaseAvailable() first.
-  const cookieStore = cookies();
+  const cookieStore = await cookies();
   
   return createServerClient<Database>(supabaseUrl, supabaseAnonKey, {
     cookies: {

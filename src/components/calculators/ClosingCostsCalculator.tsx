@@ -417,7 +417,7 @@ export default function ClosingCostsCalculator({
     return categoryNames[category] || category;
   };
 
-  const getCategoryIcon = (category: string): JSX.Element => {
+  const getCategoryIcon = (category: string): React.ReactElement => {
     const iconProps = { className: "w-5 h-5", style: { color: 'white' } };
     
     switch (category) {

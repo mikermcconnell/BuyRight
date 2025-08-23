@@ -591,49 +591,19 @@ export function JourneyProvider({ children }: JourneyProviderProps) {
       journeyLogger.debug('All step IDs:', { stepIds: allStepIds });
       journeyLogger.debug('Current completed steps:', state.userProgress.completedSteps);
       
-      // Strategy: Recursively mark prerequisites as completed until all steps are available
-      // This ensures we complete the minimum number of steps to unlock everything
+      // Strategy: Simply mark ALL steps as completed to unlock everything
+      // This is the most direct approach for a "unlock all" demo feature
       
-      const completedSteps = new Set([...state.userProgress.completedSteps]);
-      let changed = true;
-      let iterations = 0;
-      const maxIterations = JOURNEY_CONSTANTS.MAX_UNLOCK_ITERATIONS; // Safety limit
+      journeyLogger.debug('Unlocking all steps by marking all as completed');
       
-      // Keep adding prerequisite steps until all steps are unlocked or we hit the limit
-      while (changed && iterations < maxIterations) {
-        changed = false;
-        iterations++;
-        
-        journeyLogger.debug(`Unlock iteration ${iterations}:`);
-        
-        for (const step of allSteps) {
-          if (!engine.isStepAvailable(step.id, Array.from(completedSteps))) {
-            // This step is not available, mark its prerequisites as completed
-            if (step.prerequisites) {
-              for (const prereqId of step.prerequisites) {
-                if (!completedSteps.has(prereqId)) {
-                  journeyLogger.debug(`  - Marking prerequisite ${prereqId} as completed to unlock ${step.id}`);
-                  completedSteps.add(prereqId);
-                  changed = true;
-                }
-              }
-            }
-          }
-        }
-        
-        journeyLogger.debug(`Total completed after iteration ${iterations}`, { total: completedSteps.size });
-      }
-      
-      journeyLogger.debug('Final completed steps for unlock:', Array.from(completedSteps));
-      
-      // Create unlocked progress with minimal completed steps
+      // Create unlocked progress with ALL steps completed
       const unlockedProgress = {
         ...state.userProgress,
-        completedSteps: Array.from(completedSteps),
+        completedSteps: [...allStepIds], // Mark all steps as completed
         lastUpdated: new Date()
       };
       
-      journeyLogger.debug('New unlocked progress (prerequisites only):', unlockedProgress);
+      journeyLogger.debug('New unlocked progress (all steps completed):', unlockedProgress);
       journeyLogger.info('Unlocking all steps', {
         completedStepsBefore: state.userProgress.completedSteps.length,
         completedStepsAfter: unlockedProgress.completedSteps.length

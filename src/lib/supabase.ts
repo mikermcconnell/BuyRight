@@ -206,7 +206,11 @@ export interface Database {
 export const isSupabaseAvailable = () => isSupabaseConfigured;
 
 // Client-side Supabase client for browser with cookie storage
-export const supabaseClient = createBrowserClient<Database>(supabaseUrl, supabaseAnonKey);
+// Sessions persist in cookies and auto-refresh by default
+export const supabaseClient = createBrowserClient<Database>(
+  supabaseUrl, 
+  supabaseAnonKey
+);
 
 // Client component client
 export function createSupabaseClientComponentClient() {

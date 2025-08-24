@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, Suspense } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useForm } from 'react-hook-form';
@@ -31,20 +31,49 @@ function LoginForm() {
   const searchParams = useSearchParams();
   const redirectTo = searchParams.get('redirectTo') || '/dashboard';
 
+  // Load remembered email on mount
+  const [rememberedEmail, setRememberedEmail] = useState<string>('');
+  
+  useEffect(() => {
+    const savedEmail = localStorage.getItem('buyright_remembered_email');
+    if (savedEmail) {
+      setRememberedEmail(savedEmail);
+    }
+  }, []);
+
   const {
     register,
     handleSubmit,
     formState: { errors },
+    setValue,
   } = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema),
+    defaultValues: {
+      rememberMe: true, // Default to checked
+    },
   });
+
+  // Set the remembered email when it's loaded
+  useEffect(() => {
+    if (rememberedEmail) {
+      setValue('email', rememberedEmail);
+    }
+  }, [rememberedEmail, setValue]);
 
   const onSubmit = async (data: LoginFormData) => {
     setIsSubmitting(true);
     setApiError(null);
 
     try {
-      const result = await signIn(data.email, data.password);
+      // Save or clear email based on remember me checkbox
+      if (data.rememberMe) {
+        localStorage.setItem('buyright_remembered_email', data.email);
+      } else {
+        localStorage.removeItem('buyright_remembered_email');
+      }
+
+      // Pass rememberMe flag to signIn for extended session
+      const result = await signIn(data.email, data.password, data.rememberMe);
 
       if (result.success) {
         // Redirect to the intended page or dashboard
@@ -94,6 +123,7 @@ function LoginForm() {
               }`}
               placeholder="Enter your email"
               autoComplete="email"
+              defaultValue={rememberedEmail}
             />
             {errors.email && (
               <p className="duolingo-error">{errors.email.message}</p>
@@ -150,7 +180,7 @@ function LoginForm() {
               className="duolingo-checkbox"
             />
             <label htmlFor="rememberMe" className="ml-3 text-sm text-gray-600">
-              Remember me for 30 days
+              Remember my email and keep me signed in
             </label>
           </div>
 

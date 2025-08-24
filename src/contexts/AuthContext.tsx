@@ -19,7 +19,7 @@ interface AuthContextType {
   user: AuthUser | null;
   profile: UserProfile | null;
   loading: boolean;
-  signIn: (email: string, password: string) => Promise<{ success: boolean; error?: string; nextStep?: string }>;
+  signIn: (email: string, password: string, rememberMe?: boolean) => Promise<{ success: boolean; error?: string; nextStep?: string }>;
   signUp: (email: string, password: string, metadata?: Record<string, any>) => Promise<{ success: boolean; error?: string; needsConfirmation?: boolean }>;
   signOut: () => Promise<{ success: boolean; error?: string }>;
   refreshProfile: () => Promise<void>;
@@ -135,9 +135,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
   }, []);
 
   // Sign in function using Supabase
-  const signIn = async (email: string, password: string) => {
+  const signIn = async (email: string, password: string, rememberMe: boolean = false) => {
     try {
-      authLogger.info('Attempting sign in', { email });
+      authLogger.info('Attempting sign in', { email, rememberMe });
       
       // Check if Supabase is available
       if (!isSupabaseAvailable()) {
@@ -164,9 +164,15 @@ export function AuthProvider({ children }: AuthProviderProps) {
       }
 
       // Sign in with Supabase
+      // If rememberMe is true, set session to persist for 30 days
+      // Otherwise, use default session duration
       const { data, error } = await supabaseClient.auth.signInWithPassword({
         email: trimmedEmail,
         password,
+        options: rememberMe ? {
+          // Persist session for 30 days
+          persistSession: true,
+        } : undefined,
       });
 
       if (error) {

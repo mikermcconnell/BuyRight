@@ -390,9 +390,52 @@ const { steps, getStepsByPhase } = useRegionalSteps()
 - **Responsive Patterns**: Consistent spacing, typography, and interaction design
 
 ## GitHub Repository Status
-- **Latest Commit**: `019626f` - Major feature updates and code quality improvements
-- **Total Files**: 25 files changed, 6,915 insertions, 181 deletions  
+- **Latest Checkpoint**: `checkpoint-2025-08-24T12-51-13` - Android app with direct Supabase connection
 - **Repository**: https://github.com/mikermcconnell/BuyRight.git
 - **Development Server**: http://localhost:3005
+
+## 🔒 Checkpoint System Protocol
+
+### Automatic Checkpoint Creation
+Claude should automatically create checkpoints in the following situations:
+
+1. **After Major Features** - When completing a significant feature (e.g., new calculator, authentication system)
+2. **Before Risky Changes** - Before making breaking changes or major refactoring
+3. **Stable States** - After fixing critical bugs and achieving a stable, working state
+4. **Milestone Completion** - When completing a phase or major task from the project roadmap
+5. **Before Deployments** - Before building for production or mobile deployment
+
+### How to Create Checkpoints
+```bash
+# Automatic checkpoint (checks if needed based on criteria)
+npm run checkpoint:auto
+
+# Manual checkpoint with description
+npm run checkpoint:save "Description of current state"
+
+# List all checkpoints
+npm run checkpoint:list
+
+# Restore to a checkpoint
+npm run checkpoint:restore checkpoint-name
+```
+
+### Checkpoint Naming Convention
+- Format: `checkpoint-YYYY-MM-DDTHH-mm-ss`
+- Example: `checkpoint-2025-08-24T12-51-13`
+
+### When to Use Checkpoints
+- ✅ **DO** create checkpoint after successful feature implementation
+- ✅ **DO** create checkpoint before experimenting with new libraries/frameworks
+- ✅ **DO** create checkpoint when user expresses satisfaction with current state
+- ✅ **DO** create checkpoint before user session ends with significant changes
+- ❌ **DON'T** create checkpoint when build is broken
+- ❌ **DON'T** create checkpoint with uncommitted sensitive data
+
+### Recovery Process
+If something goes wrong:
+1. List available checkpoints: `npm run checkpoint:list`
+2. Restore to last known good state: `npm run checkpoint:restore [checkpoint-name]`
+3. Create new branch if needed: `git checkout -b recovery-branch`
 
 This represents a production-ready home buying platform with enterprise-level code quality, comprehensive user guidance, and mobile-first design principles. The application successfully combines educational content with practical tools to guide first-time home buyers through the complex purchasing process.

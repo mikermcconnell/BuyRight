@@ -1,0 +1,11 @@
+{
+  "checkpoints": [
+    {
+      "name": "checkpoint-2025-08-24T12-51-13",
+      "description": "Android app configured with direct Supabase connection - stable state",
+      "date": "2025-08-24T12:51:15.779Z",
+      "commit": "262edf0db2969eba0a1e29492e97b3bc8b171d91",
+      "pushed": true
+    }
+  ]
+}

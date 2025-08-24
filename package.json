@@ -18,7 +18,12 @@
     "test:coverage": "jest --coverage",
     "clean": "rm -rf .next node_modules/.cache",
     "android": "npx cap open android",
-    "android:run": "npx cap run android"
+    "android:run": "npx cap run android",
+    "checkpoint": "node scripts/checkpoint.js",
+    "checkpoint:save": "node scripts/checkpoint.js save",
+    "checkpoint:list": "node scripts/checkpoint.js list",
+    "checkpoint:restore": "node scripts/checkpoint.js restore",
+    "checkpoint:auto": "node scripts/checkpoint.js auto"
   },
   "dependencies": {
     "@capacitor/android": "^7.4.3",

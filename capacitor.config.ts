@@ -9,7 +9,7 @@ const config: CapacitorConfig = {
     iosScheme: 'https',
     hostname: 'buyright.app',
     // Use localhost during development
-    url: 'http://localhost:3010',
+    url: 'http://localhost:3005',
     cleartext: true
   },
   android: {

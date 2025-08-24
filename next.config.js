@@ -3,6 +3,19 @@ const nextConfig = {
   // Enable fast refresh and hot reload optimizations
   reactStrictMode: true,
   
+  // Mobile build configuration (static export for Capacitor)
+  ...(process.env.BUILD_TARGET === 'mobile' && {
+    output: 'export',
+    distDir: 'out',
+    images: {
+      unoptimized: true,
+    },
+    // Skip API routes for static export
+    experimental: {
+      appDir: true,
+    },
+  }),
+  
   // TypeScript configuration - strict in development, flexible in deployment
   typescript: {
     ignoreBuildErrors: process.env.NODE_ENV === 'production' && process.env.VERCEL_ENV === 'production',

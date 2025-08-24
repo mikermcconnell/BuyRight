@@ -3,11 +3,14 @@ import type { CapacitorConfig } from '@capacitor/cli';
 const config: CapacitorConfig = {
   appId: 'com.buyright.app',
   appName: 'BuyRight',
-  webDir: 'out',
+  webDir: 'public',
   server: {
     androidScheme: 'https',
     iosScheme: 'https',
-    hostname: 'buyright.app'
+    hostname: 'buyright.app',
+    // Use localhost during development
+    url: 'http://localhost:3010',
+    cleartext: true
   },
   android: {
     backgroundColor: '#FAFAFA',

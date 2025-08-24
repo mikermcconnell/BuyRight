@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useRegional } from '@/contexts/RegionalContext';
 import { CalculatorIntegrationService } from '@/lib/calculatorIntegration';
+import { CalculatorService } from '@/lib/calculator-service';
 import {
   validateHomePrice,
   validateDownPayment,
@@ -454,24 +455,24 @@ export default function ClosingCostsCalculator({
     if (!result) return;
 
     try {
-      const response = await fetch('/api/calculators/save', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
+      // Use direct Supabase service instead of API route
+      const saveResult = await CalculatorService.saveCalculation({
+        calculatorType: 'closing-costs',
+        inputData: {
+          homePrice,
+          downPayment,
+          loanAmount,
+          isFirstTimeBuyer,
+          includeOptional,
+          region: currentRegion,
         },
-        body: JSON.stringify({
-          calculatorType: 'closing_costs',
-          inputData: {
-            homePrice,
-            downPayment,
-            loanAmount,
-            isFirstTimeBuyer,
-            includeOptional,
-            region: currentRegion,
-          },
-          results: result,
-        }),
+        results: result,
+        saved: true,
       });
+
+      if (!saveResult.success) {
+        console.error('Failed to save calculation:', saveResult.error);
+      }
 
       // Navigate back regardless of save success/failure
       // In a real app, you might want to handle errors differently

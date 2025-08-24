@@ -4,6 +4,7 @@ import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { useRegional } from '@/contexts/RegionalContext';
 import { CalculatorIntegrationService } from '@/lib/calculatorIntegration';
+import { CalculatorService } from '@/lib/calculator-service';
 import {
   validateIncome,
   validateDebtAmount,
@@ -571,24 +572,26 @@ const AffordabilityCalculator = React.memo(function AffordabilityCalculator({
     if (!result) return;
 
     try {
-      const response = await fetch('/api/calculators/save', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
+      // Use direct Supabase service instead of API route
+      const saveResult = await CalculatorService.saveCalculation({
+        calculatorType: 'affordability',
+        inputData: {
+          annualIncome,
+          monthlyDebts,
+          downPaymentAmount: downPaymentAmount === "" ? 0 : downPaymentAmount,
+          interestRate,
+          loanTerm,
+          includeProperty: true,
         },
-        body: JSON.stringify({
-          calculatorType: 'affordability',
-          inputData: {
-            annualIncome,
-            monthlyDebts,
-            downPaymentAmount: downPaymentAmount === "" ? 0 : downPaymentAmount,
-            interestRate,
-            loanTerm,
-            includeProperty: true,
-          },
-          results: result,
-        }),
+        results: result,
+        saved: true,
       });
+
+      if (saveResult.success) {
+        calculatorLogger.info('Calculation saved successfully', { sessionId: saveResult.sessionId });
+      } else {
+        calculatorLogger.error('Failed to save calculation', new Error(saveResult.error || 'Unknown error'));
+      }
 
       // Navigate to dashboard after saving
       router.push('/dashboard');

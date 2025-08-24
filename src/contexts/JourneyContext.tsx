@@ -581,7 +581,60 @@ export function JourneyProvider({ children }: JourneyProviderProps) {
     journeyLogger.debug('Current region:', { currentRegion });
     journeyLogger.debug('Engine exists:', { exists: !!engine });
     journeyLogger.debug('User progress exists:', { exists: !!state.userProgress });
+    journeyLogger.debug('User authenticated:', { exists: !!user });
     
+    // If not authenticated, create a demo journey with all steps unlocked
+    if (!user) {
+      journeyLogger.info('User not authenticated - creating demo journey with all steps unlocked');
+      
+      // Initialize demo journey if not already initialized
+      if (!currentRegion) {
+        journeyLogger.warn('No region selected - cannot unlock steps');
+        return;
+      }
+      
+      // Create a demo user ID
+      const demoUserId = 'demo-user';
+      
+      // Load the journey template
+      dispatch({ 
+        type: 'LOAD_JOURNEY', 
+        payload: { 
+          template: baseJourneyTemplate, 
+          regionCode: currentRegion 
+        } 
+      });
+      
+      // Create demo progress with all steps unlocked
+      const demoEngine = createJourneyEngine(currentRegion);
+      const allSteps = demoEngine.getAllSteps();
+      const allStepIds = allSteps.map(step => step.id);
+      
+      const demoProgress: UserJourneyProgress = {
+        userId: demoUserId,
+        completedSteps: allStepIds, // Mark all steps as completed
+        availableSteps: allStepIds,
+        currentStep: allSteps[0]?.id || '',
+        completedChecklist: [],
+        stepProgress: {},
+        startedAt: new Date(),
+        lastUpdated: new Date(),
+        regionCode: currentRegion
+      };
+      
+      // Save to localStorage for demo mode
+      await ProgressPersistence.saveProgress(demoProgress);
+      
+      dispatch({ 
+        type: 'UPDATE_PROGRESS', 
+        payload: demoProgress 
+      });
+      
+      journeyLogger.info('Demo journey created with all steps unlocked');
+      return;
+    }
+    
+    // For authenticated users, check if journey is initialized
     if (currentRegion && engine && state.userProgress) {
       // Get all steps from the journey engine
       const allSteps = engine.getAllSteps();
@@ -650,6 +703,20 @@ export function JourneyProvider({ children }: JourneyProviderProps) {
         engine: !!engine,
         userProgress: !!state.userProgress
       });
+      
+      // If user is authenticated but journey not initialized, try to initialize it
+      if (user && currentRegion && !state.userProgress) {
+        journeyLogger.info('Attempting to initialize journey for authenticated user');
+        await initializeJourney(currentRegion);
+        
+        // After initialization, try unlocking again
+        setTimeout(() => {
+          journeyLogger.info('Retrying unlock after initialization');
+          unlockAllSteps();
+        }, 500);
+      } else {
+        journeyLogger.error('Cannot unlock steps - journey not properly initialized');
+      }
     }
   };
 

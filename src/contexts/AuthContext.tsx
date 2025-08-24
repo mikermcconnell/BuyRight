@@ -50,17 +50,16 @@ export function AuthProvider({ children }: AuthProviderProps) {
           return;
         }
         
-        // Get current session
-        const { data: { session }, error } = await supabaseClient.auth.getSession();
+        // Use getUser() for proper authentication verification
+        const { data: { user: supabaseUser }, error } = await supabaseClient.auth.getUser();
         
         if (error) {
-          authLogger.error('Session error', error instanceof Error ? error : new Error(String(error)));
+          authLogger.info('No authenticated user found');
           setLoading(false);
           return;
         }
 
-        if (session?.user) {
-          const supabaseUser = session.user;
+        if (supabaseUser) {
           const authUser: AuthUser = {
             id: supabaseUser.id,
             email: supabaseUser.email!,
@@ -270,33 +269,50 @@ export function AuthProvider({ children }: AuthProviderProps) {
     }
   };
 
-  // Sign out function using Supabase
-  const signOut = async () => {
+  // Sign out function using Supabase - Best Practice Implementation
+  const signOut = async (): Promise<{ success: boolean; error?: string }> => {
     try {
       authLogger.info('Attempting sign out');
       
+      // Check if Supabase is available
+      if (!isSupabaseAvailable()) {
+        setUser(null);
+        setProfile(null);
+        return { success: true };
+      }
+      
+      // Properly sign out from Supabase first
       const { error } = await supabaseClient.auth.signOut();
       
       if (error) {
-        authLogger.error('Sign out error', error instanceof Error ? error : new Error(String(error)));
+        authLogger.error('Sign out error', error);
+        // Even if Supabase errors, clear local state
+        setUser(null);
+        setProfile(null);
+        
         return {
           success: false,
           error: getSupabaseAuthErrorMessage(error),
         };
       }
-
-      // Clear local state (will be handled by auth state change listener)
+      
+      // The auth state change listener will handle clearing state
+      // But we clear it here too for immediate UI update
       setUser(null);
       setProfile(null);
       
       authLogger.info('Sign out successful');
-
       return { success: true };
+      
     } catch (error) {
-      authLogger.error('Unexpected sign out error', error instanceof Error ? error : new Error(String(error)));
+      authLogger.error('Unexpected sign out error', error as Error);
+      // Clear state even on unexpected errors
+      setUser(null);
+      setProfile(null);
+      
       return {
         success: false,
-        error: 'An unexpected error occurred',
+        error: 'An unexpected error occurred during sign out',
       };
     }
   };

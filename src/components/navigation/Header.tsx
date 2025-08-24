@@ -51,15 +51,22 @@ export default function Header({
 
   const handleSignOut = async () => {
     setIsSigningOut(true);
+    
     try {
       const result = await signOut();
+      
       if (result.success) {
-        router.push('/login');
+        // Use Next.js router for proper navigation
+        await router.push('/login');
       } else {
+        // Show error but still try to navigate
         console.error('Sign out failed:', result.error);
+        await router.push('/login');
       }
     } catch (error) {
       console.error('Sign out error:', error);
+      // Navigate to login even on error
+      await router.push('/login');
     } finally {
       setIsSigningOut(false);
     }

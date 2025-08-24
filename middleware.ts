@@ -89,19 +89,21 @@ export async function middleware(req: NextRequest) {
   }
 
   try {
-    // Get the current session and refresh if needed
+    // Use getUser() for proper authentication verification
+    // This contacts the Supabase Auth server for verification
     const {
-      data: { session },
+      data: { user },
       error,
-    } = await supabase.auth.getSession()
+    } = await supabase.auth.getUser()
 
     if (error) {
-      // Auth error occurred - let component handle it
-      // On auth error, allow the request but let the component handle it
-      return res
+      // Auth error occurred - user is not authenticated
+      // Clear any stale cookies
+      res.cookies.delete('sb-access-token')
+      res.cookies.delete('sb-refresh-token')
     }
 
-    const isAuthenticated = !!session?.user
+    const isAuthenticated = !!user && !error
     const isProtectedRoute = protectedRoutes.some(route => path.startsWith(route))
     const isAuthRoute = authRoutes.some(route => path.startsWith(route))
     const isPublicRoute = publicRoutes.includes(path) || path === '/'
@@ -121,7 +123,7 @@ export async function middleware(req: NextRequest) {
         const { data: profile } = await supabase
           .from('user_profiles')
           .select('location')
-          .eq('user_id', session.user.id)
+          .eq('user_id', user.id)
           .single()
         
         if (profile && (profile as any).location) {
@@ -148,7 +150,7 @@ export async function middleware(req: NextRequest) {
           const { data: profile } = await supabase
             .from('user_profiles')
             .select('location')
-            .eq('user_id', session.user.id)
+            .eq('user_id', user.id)
             .single()
           
           if (profile && (profile as any).location) {

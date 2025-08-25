@@ -68,7 +68,7 @@ export class JourneyService {
       // Sanitize any text data
       const sanitizedData = data ? {
         ...data,
-        notes: data.notes ? sanitizeTextInput(data.notes, 500) : null
+        notes: data.notes ? sanitizeTextInput(data.notes, { maxLength: 500 }) : null
       } : null;
       const progressData = {
         user_id: userId,

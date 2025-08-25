@@ -83,25 +83,37 @@ export default function RootLayout({
           </AuthProvider>
         </ErrorBoundary>
         
-        {/* Service Worker Registration for PWA */}
-        <Script
-          id="service-worker-registration"
-          strategy="afterInteractive"
-        >
-          {`
-            if ('serviceWorker' in navigator) {
-              window.addEventListener('load', function() {
-                navigator.serviceWorker.register('/sw.js')
-                  .then(function(registration) {
-                    console.log('SW registered: ', registration);
-                  })
-                  .catch(function(registrationError) {
-                    console.log('SW registration failed: ', registrationError);
-                  });
-              });
-            }
-          `}
-        </Script>
+        {/* Service Worker Registration for PWA - Production Only */}
+        {process.env.NODE_ENV === 'production' && (
+          <Script
+            id="service-worker-registration"
+            strategy="afterInteractive"
+          >
+            {`
+              if ('serviceWorker' in navigator) {
+                window.addEventListener('load', function() {
+                  // Check if service worker file exists before registration
+                  fetch('/sw.js', { method: 'HEAD' })
+                    .then(function(response) {
+                      if (response.ok) {
+                        return navigator.serviceWorker.register('/sw.js');
+                      } else {
+                        throw new Error('Service worker file not found');
+                      }
+                    })
+                    .then(function(registration) {
+                      console.log('SW registered successfully: ', registration.scope);
+                    })
+                    .catch(function(registrationError) {
+                      console.warn('SW registration failed: ', registrationError);
+                    });
+                });
+              } else {
+                console.warn('Service Worker not supported in this browser');
+              }
+            `}
+          </Script>
+        )}
         
         {/* Google Analytics */}
         {process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID && (

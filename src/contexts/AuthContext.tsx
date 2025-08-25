@@ -169,10 +169,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
       const { data, error } = await supabaseClient.auth.signInWithPassword({
         email: trimmedEmail,
         password,
-        options: rememberMe ? {
-          // Persist session for 30 days
-          persistSession: true,
-        } : undefined,
+        // Note: persistSession is handled automatically by Supabase for browser clients
       });
 
       if (error) {

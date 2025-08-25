@@ -48,27 +48,39 @@ export async function middleware(req: NextRequest) {
           return req.cookies.get(name)?.value
         },
         set(name: string, value: string, options: any) {
+          const cookieOptions = {
+            ...options,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: 'lax' as const,
+            httpOnly: name.includes('refresh') ? true : options.httpOnly
+          };
           req.cookies.set({
             name,
             value,
-            ...options,
+            ...cookieOptions,
           })
           res.cookies.set({
             name,
             value,
-            ...options,
+            ...cookieOptions,
           })
         },
         remove(name: string, options: any) {
+          const cookieOptions = {
+            ...options,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: 'lax' as const,
+            httpOnly: name.includes('refresh') ? true : options.httpOnly
+          };
           req.cookies.set({
             name,
             value: '',
-            ...options,
+            ...cookieOptions,
           })
           res.cookies.set({
             name,
             value: '',
-            ...options,
+            ...cookieOptions,
           })
         },
       },

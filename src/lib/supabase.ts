@@ -273,16 +273,19 @@ export class SupabaseService {
 
   // User Profile operations
   async createOrUpdateProfile(userId: string, profileData: Partial<UserProfileInsert>): Promise<UserProfile | null> {
-    const upsertData = {
+    const upsertData: UserProfileInsert = {
       user_id: userId,
-      location: 'ON', // Default location if not provided
-      ...profileData,
+      location: profileData.location || 'ON', // Default location if not provided
+      budget_max: profileData.budget_max ?? null,
+      timeline_preference: profileData.timeline_preference || 'normal',
+      home_type_preference: profileData.home_type_preference ?? null,
+      first_time_buyer: profileData.first_time_buyer ?? true,
       updated_at: new Date().toISOString(),
-    } as any; // Type assertion needed due to Supabase type generation issues
+    };
     
     const { data, error } = await this.supabase
       .from('user_profiles')
-      .upsert(upsertData)
+      .upsert(upsertData as any) // Type assertion needed due to Supabase type generation
       .select()
       .single();
 
@@ -353,18 +356,20 @@ export class SupabaseService {
     if (!phase || typeof phase !== 'string') {
       throw new Error('Invalid phase provided');
     }
+    const progressData: JourneyProgressInsert = {
+      user_id: userId,
+      step_id: stepId,
+      phase: phase,
+      completed: completed ?? false,
+      completed_at: completed ? new Date().toISOString() : null,
+      notes: notes || null,
+      data: stepData || null,
+      updated_at: new Date().toISOString(),
+    };
+    
     const { data, error } = await this.supabase
       .from('journey_progress')
-      .upsert({
-        user_id: userId,
-        step_id: stepId,
-        phase: phase,
-        completed: completed,
-        completed_at: completed ? new Date().toISOString() : null,
-        notes: notes || null,
-        data: stepData || null,
-        updated_at: new Date().toISOString(),
-      } as any)
+      .upsert(progressData as any) // Type assertion needed due to Supabase type generation
       .select()
       .single();
 
@@ -426,15 +431,17 @@ export class SupabaseService {
     results: Record<string, any>,
     saved: boolean = false
   ): Promise<CalculatorSession | null> {
+    const sessionData: CalculatorSessionInsert = {
+      user_id: userId,
+      calculator_type: calculatorType,
+      input_data: inputData,
+      results: results,
+      saved: saved ?? false,
+    };
+    
     const { data, error } = await this.supabase
       .from('calculator_sessions')
-      .insert({
-        user_id: userId,
-        calculator_type: calculatorType,
-        input_data: inputData,
-        results: results,
-        saved: saved,
-      } as any)
+      .insert(sessionData as any) // Type assertion needed due to Supabase type generation
       .select()
       .single();
 

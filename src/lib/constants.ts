@@ -18,6 +18,7 @@ export const AUTH_CONSTANTS = {
 export const FINANCIAL_CONSTANTS = {
   // Debt-to-Income Ratios (percentages)
   MAX_DEBT_TO_INCOME_RATIO: 36,
+  MAX_HOUSING_RATIO: 28,
   
   // Property costs (percentage of home price)
   INSURANCE_RATE: 0.003, // 0.3% of home price
@@ -30,6 +31,49 @@ export const FINANCIAL_CONSTANTS = {
   
   // Default completion percentages
   DEFAULT_COMPLETION_PERCENTAGE: 100,
+  
+  // Validation limits
+  LIMITS: {
+    MIN_INCOME: 10000,
+    MAX_INCOME: 10000000,
+    MIN_DEBT: 0,
+    MAX_DEBT: 50000,
+    MIN_INTEREST_RATE: 0.1,
+    MAX_INTEREST_RATE: 25,
+    MIN_DOWN_PAYMENT: 1000,
+    MAX_DOWN_PAYMENT: 500000,
+    MIN_HOME_PRICE: 50000,
+    MAX_HOME_PRICE: 50000000,
+    MIN_LOAN_TERM: 5,
+    MAX_LOAN_TERM: 40,
+  },
+  
+  // Ontario Land Transfer Tax brackets
+  ONTARIO_LTT_BRACKETS: {
+    BRACKET_1_LIMIT: 55000,
+    BRACKET_1_RATE: 0.005,
+    BRACKET_2_LIMIT: 250000,
+    BRACKET_2_BASE: 275,
+    BRACKET_2_RATE: 0.01,
+    BRACKET_3_LIMIT: 400000,
+    BRACKET_3_BASE: 2225,
+    BRACKET_3_RATE: 0.015,
+    BRACKET_4_BASE: 4475,
+    BRACKET_4_RATE: 0.02,
+  },
+  
+  // BC Property Transfer Tax brackets
+  BC_PTT_BRACKETS: {
+    BRACKET_1_LIMIT: 200000,
+    BRACKET_1_RATE: 0.01,
+    BRACKET_2_LIMIT: 2000000,
+    BRACKET_2_BASE: 2000,
+    BRACKET_2_RATE: 0.02,
+    BRACKET_3_BASE: 38000,
+    BRACKET_3_RATE: 0.03,
+    FIRST_TIME_BUYER_LIMIT: 500000,
+    FIRST_TIME_BUYER_EXEMPTION: 8000,
+  },
 } as const;
 
 // User Interface
@@ -45,12 +89,28 @@ export const UI_CONSTANTS = {
   PROGRESS_BAR_DURATION: 1000,
   BUTTON_TRANSITION_DURATION: 200,
   CARD_TRANSITION_DURATION: 300,
+  CELEBRATION_DELAY: 1000, // Delay before showing celebration
   
   // Component dimensions
   TOUCH_TARGET_MIN_SIZE: 44, // px - minimum touch target size
   
   // Loading states
   DEBOUNCE_DELAY: 300, // milliseconds
+  
+  // Form validation
+  MIN_PASSWORD_LENGTH: 6,
+  MAX_EMAIL_LENGTH: 254,
+  MAX_URL_LENGTH: 2048,
+  MAX_PHONE_DIGITS_NA: 11, // North American phone numbers
+  MIN_PHONE_DIGITS_NA: 10,
+  
+  // Screen breakpoints (pixels)
+  BREAKPOINTS: {
+    SM: 640,
+    MD: 768,
+    LG: 1024,
+    XL: 1280,
+  },
 } as const;
 
 // Regional Configuration
@@ -88,6 +148,9 @@ export const JOURNEY_CONSTANTS = {
     BUYING: 'buying',
     MOVING: 'moving',
   },
+  
+  // Timing
+  CELEBRATION_DELAY: 1000, // milliseconds
 } as const;
 
 // Logging & Monitoring
@@ -114,8 +177,14 @@ export const API_CONSTANTS = {
   MAX_RETRY_ATTEMPTS: 3,
   
   // Rate limiting
-  RATE_LIMIT_WINDOW: 60000, // 1 minute
+  RATE_LIMIT_WINDOW: 900000, // 15 minutes
   RATE_LIMIT_MAX_REQUESTS: 100,
+  
+  // Input validation for API
+  MAX_API_INPUT_LENGTH: 10000,
+  
+  // Security
+  MIN_AUTH_SECRET_LENGTH: 32,
 } as const;
 
 // File & Data

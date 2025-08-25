@@ -32,6 +32,60 @@ import { JOURNEY_CONSTANTS } from '@/lib/constants';
 
 const journeyLogger = logger.createDomainLogger('journey');
 
+// Custom error types for journey operations
+export class JourneyError extends Error {
+  constructor(
+    message: string,
+    public code: string,
+    public context?: Record<string, any>
+  ) {
+    super(message);
+    this.name = 'JourneyError';
+  }
+}
+
+export class JourneyInitializationError extends JourneyError {
+  constructor(message: string, context?: Record<string, any>) {
+    super(message, 'JOURNEY_INIT_ERROR', context);
+    this.name = 'JourneyInitializationError';
+  }
+}
+
+export class JourneyPersistenceError extends JourneyError {
+  constructor(message: string, context?: Record<string, any>) {
+    super(message, 'JOURNEY_PERSISTENCE_ERROR', context);
+    this.name = 'JourneyPersistenceError';
+  }
+}
+
+export class JourneyStepError extends JourneyError {
+  constructor(message: string, context?: Record<string, any>) {
+    super(message, 'JOURNEY_STEP_ERROR', context);
+    this.name = 'JourneyStepError';
+  }
+}
+
+// Helper function to get user-friendly error messages
+export function getUserFriendlyErrorMessage(error: unknown): string {
+  if (error instanceof JourneyInitializationError) {
+    return 'There was a problem loading your journey progress. Please try refreshing the page.';
+  }
+  
+  if (error instanceof JourneyPersistenceError) {
+    return 'Your progress couldn\'t be saved right now. Don\'t worry, your local progress is still intact.';
+  }
+  
+  if (error instanceof JourneyStepError) {
+    return 'There was a problem with this step. Please try again or contact support if the issue persists.';
+  }
+  
+  if (error instanceof Error) {
+    return error.message;
+  }
+  
+  return 'An unexpected error occurred. Please try again.';
+}
+
 // Journey Context Type
 interface JourneyContextType extends JourneyContextState {
   // Core journey data
@@ -326,10 +380,14 @@ export function JourneyProvider({ children }: JourneyProviderProps) {
       });
 
     } catch (error) {
-      journeyLogger.error('Failed to initialize journey:', error as Error);
+      const journeyError = new JourneyInitializationError(
+        'Failed to initialize journey',
+        { userId: user.id, regionCode, originalError: error }
+      );
+      journeyLogger.error('Failed to initialize journey:', journeyError);
       dispatch({ 
         type: 'SET_ERROR', 
-        payload: 'Failed to initialize journey' 
+        payload: getUserFriendlyErrorMessage(journeyError)
       });
     }
   };
@@ -402,7 +460,11 @@ export function JourneyProvider({ children }: JourneyProviderProps) {
         );
       }
     } catch (error) {
-      journeyLogger.error('Failed to save progress to Supabase:', error as Error);
+      const persistenceError = new JourneyPersistenceError(
+        'Failed to save progress to Supabase',
+        { userId: user.id, completedSteps: userProgress.completedSteps.length, originalError: error }
+      );
+      journeyLogger.error('Failed to save progress to Supabase:', persistenceError);
       // Don't throw - allow offline functionality to continue
     }
   };
@@ -455,7 +517,11 @@ export function JourneyProvider({ children }: JourneyProviderProps) {
       );
       journeyLogger.info('Step started in Supabase', { stepId });
     } catch (error) {
-      journeyLogger.error('Failed to sync step start with Supabase:', error as Error);
+      const stepError = new JourneyStepError(
+        'Failed to sync step start with Supabase',
+        { userId: user.id, stepId, originalError: error }
+      );
+      journeyLogger.error('Failed to sync step start with Supabase:', stepError);
       // Continue with local state - the persistence service will handle offline sync
     }
   };
@@ -480,7 +546,11 @@ export function JourneyProvider({ children }: JourneyProviderProps) {
       );
       journeyLogger.info('Step completed in Supabase', { stepId });
     } catch (error) {
-      journeyLogger.error('Failed to sync step completion with Supabase:', error as Error);
+      const stepError = new JourneyStepError(
+        'Failed to sync step completion with Supabase',
+        { userId: user.id, stepId, originalError: error }
+      );
+      journeyLogger.error('Failed to sync step completion with Supabase:', stepError);
       // Continue with local state - the persistence service will handle offline sync
     }
     
@@ -538,10 +608,14 @@ export function JourneyProvider({ children }: JourneyProviderProps) {
         journeyLogger.info('🎉 Receive keys completed - triggering celebration!');
         setTimeout(() => {
           dispatch({ type: 'SHOW_CELEBRATION' });
-        }, 1000); // Small delay to let the UI update first
+        }, JOURNEY_CONSTANTS.CELEBRATION_DELAY); // Small delay to let the UI update first
       }
     } catch (error) {
-      journeyLogger.error('Failed to sync checklist completion with Supabase:', error as Error);
+      const stepError = new JourneyStepError(
+        'Failed to sync checklist completion with Supabase',
+        { userId: user.id, stepId, checklistItemId, originalError: error }
+      );
+      journeyLogger.error('Failed to sync checklist completion with Supabase:', stepError);
       // Continue with local state - the persistence service will handle offline sync
     }
   };
@@ -566,7 +640,11 @@ export function JourneyProvider({ children }: JourneyProviderProps) {
         // For now, we'll create new records that effectively reset the progress
         await saveProgressToSupabase(newProgress);
       } catch (error) {
-        journeyLogger.error('Failed to reset progress in Supabase:', error as Error);
+        const persistenceError = new JourneyPersistenceError(
+          'Failed to reset progress in Supabase',
+          { userId: user.id, originalError: error }
+        );
+        journeyLogger.error('Failed to reset progress in Supabase:', persistenceError);
       }
       
       dispatch({ 
@@ -613,8 +691,8 @@ export function JourneyProvider({ children }: JourneyProviderProps) {
       const demoProgress: UserJourneyProgress = {
         userId: demoUserId,
         completedSteps: allStepIds, // Mark all steps as completed
-        availableSteps: allStepIds,
-        currentStep: allSteps[0]?.id || '',
+        currentStepId: allSteps[0]?.id || '',
+        currentPhaseId: 'pre-approval',
         completedChecklist: [],
         stepProgress: {},
         startedAt: new Date(),
@@ -671,7 +749,11 @@ export function JourneyProvider({ children }: JourneyProviderProps) {
           await saveProgressToSupabase(unlockedProgress);
           journeyLogger.info('Progress saved to Supabase');
         } catch (error) {
-          journeyLogger.error('Failed to save unlocked progress to Supabase:', error as Error);
+          const persistenceError = new JourneyPersistenceError(
+            'Failed to save unlocked progress to Supabase',
+            { userId: user.id, originalError: error }
+          );
+          journeyLogger.error('Failed to save unlocked progress to Supabase:', persistenceError);
         }
       }
       

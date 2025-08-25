@@ -26,6 +26,7 @@ import {
 } from '@heroicons/react/24/outline';
 import BuyRightLogo from '@/components/ui/BuyRightLogo';
 import { logger } from '@/lib/logger';
+import { FINANCIAL_CONSTANTS, UI_CONSTANTS } from '@/lib/constants';
 
 // Create calculator-specific logger
 const calculatorLogger = logger.createDomainLogger('AffordabilityCalculator');
@@ -91,11 +92,7 @@ const AffordabilityCalculator = React.memo(function AffordabilityCalculator({
   const { formatCurrency, getTaxRate, currentRegion } = useRegional();
   const router = useRouter();
 
-  useEffect(() => {
-    calculateAffordability();
-  }, [annualIncome, monthlyDebts, downPaymentAmount, interestRate, loanTerm, isFirstTimeBuyer, includeEmergencyFund, optionalClosingCosts, currentRegion]);
-
-  const calculateAffordability = () => {
+  const calculateAffordability = useCallback(() => {
     setIsValidating(true);
     const newErrors: Record<string, string> = {};
 
@@ -117,8 +114,9 @@ const AffordabilityCalculator = React.memo(function AffordabilityCalculator({
       }
 
       // Validate down payment amount
-      if (downPaymentAmount === "" || downPaymentAmount < 1000 || downPaymentAmount > 500000) {
-        newErrors.downPaymentAmount = downPaymentAmount === "" ? 'Down payment amount is required' : 'Down payment must be between $1,000 and $500,000';
+      const { MIN_DOWN_PAYMENT, MAX_DOWN_PAYMENT } = FINANCIAL_CONSTANTS.LIMITS;
+      if (downPaymentAmount === "" || downPaymentAmount < MIN_DOWN_PAYMENT || downPaymentAmount > MAX_DOWN_PAYMENT) {
+        newErrors.downPaymentAmount = downPaymentAmount === "" ? 'Down payment amount is required' : `Down payment must be between $${MIN_DOWN_PAYMENT.toLocaleString()} and $${MAX_DOWN_PAYMENT.toLocaleString()}`;
       }
 
       // Set errors and return early if validation failed
@@ -140,8 +138,8 @@ const AffordabilityCalculator = React.memo(function AffordabilityCalculator({
       
       // Housing affordability rules (simplified)
       // Generally 28% of gross income for housing, 36% for total debt
-      const maxHousingPayment = monthlyIncome * 0.28;
-      const maxTotalDebt = monthlyIncome * 0.36;
+      const maxHousingPayment = monthlyIncome * (FINANCIAL_CONSTANTS.MAX_HOUSING_RATIO / 100);
+      const maxTotalDebt = monthlyIncome * (FINANCIAL_CONSTANTS.MAX_DEBT_TO_INCOME_RATIO / 100);
       const availableForHousing = maxTotalDebt - sanitizedDebts;
       
       // Use the lower of the two limits
@@ -298,9 +296,13 @@ const AffordabilityCalculator = React.memo(function AffordabilityCalculator({
     } finally {
       setIsValidating(false);
     }
-  };
+  }, [annualIncome, monthlyDebts, downPaymentAmount, interestRate, loanTerm, isFirstTimeBuyer, includeEmergencyFund, optionalClosingCosts, currentRegion, formatCurrency, getTaxRate, onResultChange]);
 
-  const calculateClosingCosts = (homePrice: number, loanAmount: number, firstTimeBuyer: boolean, optionalCosts: any, region: string | null): ClosingCost[] => {
+  useEffect(() => {
+    calculateAffordability();
+  }, [calculateAffordability]);
+
+  const calculateClosingCosts = useCallback((homePrice: number, loanAmount: number, firstTimeBuyer: boolean, optionalCosts: any, region: string | null): ClosingCost[] => {
     if (!region) return [];
     
     const costs: ClosingCost[] = [];
@@ -501,41 +503,66 @@ const AffordabilityCalculator = React.memo(function AffordabilityCalculator({
     }
 
     return costs;
-  };
+  }, []);
 
-  const calculateOntarioLTT = (price: number): number => {
+  const calculateOntarioLTT = useCallback((price: number): number => {
+    const {
+      BRACKET_1_LIMIT,
+      BRACKET_1_RATE,
+      BRACKET_2_LIMIT,
+      BRACKET_2_BASE,
+      BRACKET_2_RATE,
+      BRACKET_3_LIMIT,
+      BRACKET_3_BASE,
+      BRACKET_3_RATE,
+      BRACKET_4_BASE,
+      BRACKET_4_RATE,
+    } = FINANCIAL_CONSTANTS.ONTARIO_LTT_BRACKETS;
+
     let tax = 0;
-    if (price <= 55000) {
-      tax = price * 0.005;
-    } else if (price <= 250000) {
-      tax = 275 + (price - 55000) * 0.01;
-    } else if (price <= 400000) {
-      tax = 2225 + (price - 250000) * 0.015;
+    if (price <= BRACKET_1_LIMIT) {
+      tax = price * BRACKET_1_RATE;
+    } else if (price <= BRACKET_2_LIMIT) {
+      tax = BRACKET_2_BASE + (price - BRACKET_1_LIMIT) * BRACKET_2_RATE;
+    } else if (price <= BRACKET_3_LIMIT) {
+      tax = BRACKET_3_BASE + (price - BRACKET_2_LIMIT) * BRACKET_3_RATE;
     } else {
-      tax = 4475 + (price - 400000) * 0.02;
+      tax = BRACKET_4_BASE + (price - BRACKET_3_LIMIT) * BRACKET_4_RATE;
     }
     return Math.max(tax, 0);
-  };
+  }, []);
 
-  const calculateBCPTT = (price: number, firstTimeBuyer: boolean): number => {
+  const calculateBCPTT = useCallback((price: number, firstTimeBuyer: boolean): number => {
+    const {
+      BRACKET_1_LIMIT,
+      BRACKET_1_RATE,
+      BRACKET_2_LIMIT,
+      BRACKET_2_BASE,
+      BRACKET_2_RATE,
+      BRACKET_3_BASE,
+      BRACKET_3_RATE,
+      FIRST_TIME_BUYER_LIMIT,
+      FIRST_TIME_BUYER_EXEMPTION,
+    } = FINANCIAL_CONSTANTS.BC_PTT_BRACKETS;
+
     let tax = 0;
-    if (price <= 200000) {
-      tax = price * 0.01;
-    } else if (price <= 2000000) {
-      tax = 2000 + (price - 200000) * 0.02;
+    if (price <= BRACKET_1_LIMIT) {
+      tax = price * BRACKET_1_RATE;
+    } else if (price <= BRACKET_2_LIMIT) {
+      tax = BRACKET_2_BASE + (price - BRACKET_1_LIMIT) * BRACKET_2_RATE;
     } else {
-      tax = 38000 + (price - 2000000) * 0.03;
+      tax = BRACKET_3_BASE + (price - BRACKET_2_LIMIT) * BRACKET_3_RATE;
     }
 
     // First-time buyer exemption (simplified)
-    if (firstTimeBuyer && price <= 500000) {
-      tax = Math.max(0, tax - Math.min(8000, tax));
+    if (firstTimeBuyer && price <= FIRST_TIME_BUYER_LIMIT) {
+      tax = Math.max(0, tax - Math.min(FIRST_TIME_BUYER_EXEMPTION, tax));
     }
 
     return Math.max(tax, 0);
-  };
+  }, []);
 
-  const getCategoryName = (category: string): string => {
+  const getCategoryName = useCallback((category: string): string => {
     const categoryNames: { [key: string]: string } = {
       tax: 'Taxes',
       legal: 'Legal Fees',
@@ -545,7 +572,7 @@ const AffordabilityCalculator = React.memo(function AffordabilityCalculator({
       other: 'Other Costs',
     };
     return categoryNames[category] || category;
-  };
+  }, []);
 
   const getCategoryIcon = (category: string): React.ReactElement => {
     const iconProps = { className: "w-5 h-5", style: { color: 'white' } };
@@ -568,7 +595,7 @@ const AffordabilityCalculator = React.memo(function AffordabilityCalculator({
     }
   };
 
-  const handleSaveCalculation = async () => {
+  const handleSaveCalculation = useCallback(async () => {
     if (!result) return;
 
     try {
@@ -600,7 +627,7 @@ const AffordabilityCalculator = React.memo(function AffordabilityCalculator({
       // Navigate to dashboard even if save fails
       router.push('/dashboard');
     }
-  };
+  }, [result, annualIncome, monthlyDebts, downPaymentAmount, interestRate, loanTerm, router]);
 
   return (
     <div className="max-w-2xl mx-auto">

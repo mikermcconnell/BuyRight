@@ -25,6 +25,8 @@ const publicRoutes = [
   '/about',
   '/privacy',
   '/terms',
+  '/delete-account',
+  '/delete-account/success',
 ]
 
 export async function middleware(req: NextRequest) {

@@ -936,7 +936,10 @@ function SecurityTab({ user, profile, onSave, loading }: {
             Download My Data
           </button>
           <br />
-          <button className="text-sm text-red-600 hover:text-red-500">
+          <button 
+            onClick={() => window.location.href = '/delete-account'}
+            className="text-sm text-red-600 hover:text-red-500"
+          >
             Delete Account
           </button>
         </div>

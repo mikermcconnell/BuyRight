@@ -260,16 +260,32 @@ function RegisterForm() {
 
         {/* Divider */}
         <div className="duolingo-divider">
-          <span>Already have an account?</span>
+          <span>Or</span>
         </div>
 
-        {/* Sign In Link */}
-        <div className="text-center">
+        {/* Continue as Guest */}
+        <div className="text-center space-y-4">
+          <button
+            type="button"
+            onClick={() => router.push('/dashboard')}
+            className="w-full px-4 py-3 border border-gray-300 rounded-lg text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-colors"
+          >
+            Continue as Guest
+          </button>
+          
+          {/* Guest Mode Warning */}
+          <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3">
+            <p className="text-xs text-yellow-800">
+              <strong>⚠️ Guest Mode:</strong> Your progress will be saved locally but won't sync across devices. 
+              Create an account to save your progress in the cloud!
+            </p>
+          </div>
+
           <Link
             href="/login"
-            className="duolingo-link text-sm"
+            className="duolingo-link text-sm block"
           >
-            Sign in to your account
+            Already have an account? Sign in
           </Link>
         </div>
       </div>

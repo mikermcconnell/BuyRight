@@ -3,6 +3,7 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { useJourney, useJourneyProgress } from '@/contexts/JourneyContext';
+import { useAuth } from '@/contexts/AuthContext';
 import { CalculatorIntegrationService } from '@/lib/calculatorIntegration';
 import CalculatorWidget from '@/components/journey/CalculatorWidget';
 import MobileProgressTracker from '@/components/journey/MobileProgressTracker';
@@ -17,6 +18,7 @@ import JourneyCelebration from '@/components/celebration/JourneyCelebration';
 
 function Dashboard() {
   const router = useRouter();
+  const { user } = useAuth();
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [initialLoading, setInitialLoading] = useState(true);
   const [showResetConfirm, setShowResetConfirm] = useState(false);
@@ -217,7 +219,7 @@ function Dashboard() {
         <div className="duolingo-card mb-8">
           <div className="text-center">
             <h1 className="duolingo-title mb-2">
-              Hey {profile?.firstName || mockUser.email.split('@')[0]}! 🏡
+              Hey {profile?.firstName || (user ? user.email.split('@')[0] : 'there')}! 🏡
             </h1>
             <p className="duolingo-subtitle">
               You're doing great! Let's take the next step toward your new home.
@@ -238,6 +240,42 @@ function Dashboard() {
             </div>
           </div>
         </div>
+
+        {/* Guest User Sign-In Prompt */}
+        {!user && (
+          <div className="duolingo-card mb-8 border-2 border-blue-200 bg-blue-50">
+            <div className="text-center">
+              <div className="w-16 h-16 bg-blue-500 rounded-xl flex items-center justify-center mx-auto mb-4">
+                <span className="text-white font-bold text-2xl">👤</span>
+              </div>
+              <h3 className="text-xl font-bold text-gray-800 mb-3">
+                Save Your Progress
+              </h3>
+              <p className="text-gray-600 mb-6">
+                You're currently using guest mode. Create an account to save your progress across devices and never lose your home buying journey!
+              </p>
+              <div className="flex flex-col sm:flex-row gap-3 justify-center">
+                <button
+                  onClick={() => router.push('/register')}
+                  className="duolingo-button bg-blue-500 hover:bg-blue-600 text-white px-6 py-3 rounded-lg font-semibold transition-colors"
+                >
+                  Create Account
+                </button>
+                <button
+                  onClick={() => router.push('/login')}
+                  className="px-6 py-3 border-2 border-blue-500 text-blue-500 rounded-lg font-semibold hover:bg-blue-500 hover:text-white transition-colors"
+                >
+                  Sign In
+                </button>
+              </div>
+              <div className="mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+                <p className="text-xs text-yellow-800">
+                  <strong>⚠️ Guest Mode:</strong> Your progress is saved locally and won't sync across devices.
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Financial Insights */}
         {calculatorInsights && (calculatorInsights.maxBudget || calculatorInsights.monthlyPayment || calculatorInsights.totalClosingCosts || calculatorInsights.totalCashRequired) && (

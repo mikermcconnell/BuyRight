@@ -196,16 +196,32 @@ function LoginForm() {
 
         {/* Divider */}
         <div className="duolingo-divider">
-          <span>New to BuyRight?</span>
+          <span>Or</span>
         </div>
 
-        {/* Sign Up Link */}
-        <div className="text-center">
+        {/* Continue as Guest */}
+        <div className="text-center space-y-4">
+          <button
+            type="button"
+            onClick={() => router.push('/dashboard')}
+            className="w-full px-4 py-3 border border-gray-300 rounded-lg text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-colors"
+          >
+            Continue as Guest
+          </button>
+          
+          {/* Guest Mode Warning */}
+          <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3">
+            <p className="text-xs text-yellow-800">
+              <strong>⚠️ Guest Mode:</strong> Your progress will be saved locally but won't sync across devices. 
+              Create an account to save your progress in the cloud!
+            </p>
+          </div>
+
           <Link
             href="/register"
-            className="duolingo-link text-sm"
+            className="duolingo-link text-sm block"
           >
-            Create an account
+            New to BuyRight? Create an account
           </Link>
         </div>
       </div>

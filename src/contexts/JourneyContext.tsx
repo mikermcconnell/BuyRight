@@ -325,24 +325,19 @@ export function JourneyProvider({ children }: JourneyProviderProps) {
   const { currentRegion } = useRegional();
   const { user } = useAuth();
 
-  // Initialize journey when region and user are loaded
+  // Initialize journey when region is loaded (for both authenticated and guest users)
   useEffect(() => {
-    if (currentRegion && user) {
+    if (currentRegion) {
       initializeJourney(currentRegion);
     }
-  }, [currentRegion, user]);
+  }, [currentRegion]);
 
   const initializeJourney = async (regionCode: RegionCode) => {
-    if (!user) {
-      journeyLogger.warn('Cannot initialize journey without authenticated user');
-      return;
-    }
-
     try {
-      journeyLogger.info('Initializing journey', { userId: user.id, regionCode });
+      console.log('🏠 BuyRight: Initializing journey for region:', regionCode, 'User:', user ? 'authenticated' : 'guest');
       dispatch({ type: 'SET_LOADING', payload: true });
 
-      // Load the journey template
+      // Load the journey template for all users
       dispatch({ 
         type: 'LOAD_JOURNEY', 
         payload: { 
@@ -351,38 +346,64 @@ export function JourneyProvider({ children }: JourneyProviderProps) {
         } 
       });
 
-      // Load user progress from Supabase
-      const supabaseProgress = await supabaseService.getJourneyProgress(user.id);
-      
       let userProgress: UserJourneyProgress;
-      
-      if (supabaseProgress.length === 0) {
-        // Create new progress for this user and region
-        journeyLogger.info('Creating new journey progress for user');
-        userProgress = initializeUserProgress(user.id, regionCode);
-        
-        // Save initial progress to Supabase
-        await saveProgressToSupabase(userProgress);
-      } else {
-        // Convert Supabase progress to UserJourneyProgress format
-        userProgress = convertSupabaseProgressToUserProgress(supabaseProgress, user.id, regionCode);
-        journeyLogger.info('Loaded existing progress from Supabase', { 
-          completedSteps: userProgress.completedSteps.length 
-        });
-      }
 
-      // Also maintain localStorage backup for offline functionality
-      await ProgressPersistence.saveProgress(userProgress);
+      if (!user) {
+        // Guest user - initialize demo journey
+        journeyLogger.info('Initializing guest journey', { regionCode });
+        
+        // Check if there's existing guest progress in localStorage
+        const existingProgress = await ProgressPersistence.loadProgress();
+        
+        if (existingProgress && existingProgress.userId === 'demo-user') {
+          // Use existing guest progress
+          userProgress = existingProgress;
+          journeyLogger.info('Loaded existing guest progress from localStorage');
+        } else {
+          // Create new guest progress
+          userProgress = initializeUserProgress('demo-user', regionCode);
+          journeyLogger.info('Created new guest journey progress');
+        }
+        
+        // Save to localStorage for guest mode
+        await ProgressPersistence.saveProgress(userProgress);
+      } else {
+        // Authenticated user
+        journeyLogger.info('Initializing authenticated journey', { userId: user.id, regionCode });
+        
+        // Load user progress from Supabase
+        const supabaseProgress = await supabaseService.getJourneyProgress(user.id);
+        
+        if (supabaseProgress.length === 0) {
+          // Create new progress for this user and region
+          journeyLogger.info('Creating new journey progress for user');
+          userProgress = initializeUserProgress(user.id, regionCode);
+          
+          // Save initial progress to Supabase
+          await saveProgressToSupabase(userProgress);
+        } else {
+          // Convert Supabase progress to UserJourneyProgress format
+          userProgress = convertSupabaseProgressToUserProgress(supabaseProgress, user.id, regionCode);
+          journeyLogger.info('Loaded existing progress from Supabase', { 
+            completedSteps: userProgress.completedSteps.length 
+          });
+        }
+
+        // Also maintain localStorage backup for offline functionality
+        await ProgressPersistence.saveProgress(userProgress);
+      }
 
       dispatch({ 
         type: 'UPDATE_PROGRESS', 
         payload: userProgress 
       });
 
+      console.log('🏠 BuyRight: Journey initialized successfully for', user ? 'authenticated user' : 'guest user');
+
     } catch (error) {
       const journeyError = new JourneyInitializationError(
         'Failed to initialize journey',
-        { userId: user.id, regionCode, originalError: error }
+        { userId: user?.id || 'demo-user', regionCode, originalError: error }
       );
       journeyLogger.error('Failed to initialize journey:', journeyError);
       dispatch({ 

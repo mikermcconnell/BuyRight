@@ -1,8 +1,12 @@
 'use client';
 
+import { useRouter } from 'next/navigation';
 import Header from '@/components/navigation/Header';
+import { ArrowLeftIcon } from '@heroicons/react/24/outline';
 
 export default function PrivacyPolicyPage() {
+  const router = useRouter();
+
   return (
     <>
       <Header 
@@ -114,6 +118,16 @@ export default function PrivacyPolicyPage() {
               accept the updated policy.
             </p>
           </section>
+
+          <div className="text-center mb-8">
+            <button
+              onClick={() => router.push('/dashboard')}
+              className="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-colors"
+            >
+              <ArrowLeftIcon className="w-5 h-5 mr-2" />
+              Back to Dashboard
+            </button>
+          </div>
 
           <div className="border-t border-gray-200 pt-8 mt-12">
             <p className="text-center text-gray-500 text-sm">

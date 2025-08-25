@@ -279,43 +279,71 @@ export function AuthProvider({ children }: AuthProviderProps) {
       
       // Check if Supabase is available
       if (!isSupabaseAvailable()) {
+        authLogger.info('Supabase not available - clearing local state');
         setUser(null);
         setProfile(null);
         return { success: true };
       }
       
-      // Properly sign out from Supabase first
-      const { error } = await supabaseClient.auth.signOut();
+      // Add timeout to prevent infinite hanging
+      const signOutPromise = supabaseClient.auth.signOut();
+      const timeoutPromise = new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('Sign out timeout')), 10000)
+      );
       
-      if (error) {
-        authLogger.error('Sign out error', error);
-        // Even if Supabase errors, clear local state
-        setUser(null);
-        setProfile(null);
-        
-        return {
-          success: false,
-          error: getSupabaseAuthErrorMessage(error),
-        };
+      // Race between sign out and timeout
+      const result = await Promise.race([signOutPromise, timeoutPromise]) as { error?: any };
+      
+      if (result.error) {
+        authLogger.error('Sign out error', result.error);
+      } else {
+        authLogger.info('Supabase sign out completed');
       }
       
-      // The auth state change listener will handle clearing state
-      // But we clear it here too for immediate UI update
+      // Always clear local state regardless of Supabase response
       setUser(null);
       setProfile(null);
       
-      authLogger.info('Sign out successful');
+      // Clear any Supabase auth cookies/localStorage
+      try {
+        localStorage.removeItem('supabase.auth.token');
+        // Clear any auth-related localStorage keys
+        Object.keys(localStorage).forEach(key => {
+          if (key.startsWith('sb-') || key.includes('supabase.auth')) {
+            localStorage.removeItem(key);
+          }
+        });
+      } catch (storageError) {
+        authLogger.warn('Error clearing auth storage:', storageError as Error);
+      }
+      
+      authLogger.info('Sign out successful - local state cleared');
       return { success: true };
       
     } catch (error) {
       authLogger.error('Unexpected sign out error', error as Error);
-      // Clear state even on unexpected errors
+      
+      // Force clear state even on timeout or unexpected errors
       setUser(null);
       setProfile(null);
       
+      // Force clear storage
+      try {
+        localStorage.removeItem('supabase.auth.token');
+        Object.keys(localStorage).forEach(key => {
+          if (key.startsWith('sb-') || key.includes('supabase.auth')) {
+            localStorage.removeItem(key);
+          }
+        });
+      } catch (storageError) {
+        authLogger.warn('Error force clearing auth storage:', storageError as Error);
+      }
+      
       return {
-        success: false,
-        error: 'An unexpected error occurred during sign out',
+        success: true, // Return success even on timeout to allow UI to proceed
+        error: error instanceof Error && error.message === 'Sign out timeout' ? 
+          'Sign out took too long, but you have been signed out locally' : 
+          'An unexpected error occurred during sign out, but you have been signed out locally',
       };
     }
   };

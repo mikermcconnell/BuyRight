@@ -4,12 +4,9 @@ import type { NextRequest } from 'next/server'
 import type { Database } from '@/lib/supabase'
 
 // Define routes that require authentication
+// Note: These routes now allow guest access with localStorage fallbacks
 const protectedRoutes = [
-  '/dashboard',
-  '/onboarding', 
-  '/calculators',
-  '/journey',
-  '/guides',
+  '/onboarding', // Still require auth for profile setup
 ]
 
 // Define routes that redirect authenticated users
@@ -27,6 +24,10 @@ const publicRoutes = [
   '/terms',
   '/delete-account',
   '/delete-account/success',
+  '/dashboard',     // Allow guest access with localStorage
+  '/calculators',   // Allow guest access with localStorage
+  '/journey',       // Allow guest access with localStorage  
+  '/guides',        // Allow guest access with localStorage
 ]
 
 export async function middleware(req: NextRequest) {

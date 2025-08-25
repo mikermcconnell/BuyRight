@@ -3,8 +3,8 @@
 ## Project Overview
 **BuyRight** is a mobile-first interactive home buying and maintenance platform that guides first-time buyers through the complex process with region-specific step-by-step instructions, progress tracking, and financial calculators.
 
-**Current Status**: ✅ PRODUCTION READY - Enterprise-Level Code Quality Achieved  
-**Current Task**: Complete - Ready for Deployment
+**Current Status**: ✅ PRODUCTION READY - Google Play Console Compliant
+**Current Task**: Complete - Ready for App Store Submission
 
 ## Tech Stack & Architecture
 - **Frontend**: React 18 + Next.js 14 App Router + TypeScript
@@ -96,6 +96,23 @@
   - Context state management verified
   - TypeScript compilation errors resolved
 
+### ✅ **Latest Completion (Phase 6 - August 2025)**
+**Google Play Console Compliance & App Store Readiness** - 100% Complete
+- ✅ **Google Play Console Compliance** - All required privacy and policy features
+  - Comprehensive privacy policy at `/privacy` meeting 2024-2025 Google Play requirements
+  - Account deletion functionality at `/delete-account` with secure data cleanup
+  - Data safety compliance for financial apps with third-party service disclosures
+  - CCPA compliance section and children's privacy protection
+- ✅ **Android App Deployment** - Mobile-ready with Capacitor integration
+  - Android emulator connectivity configured (10.0.2.2:3005)
+  - Direct Supabase connection for mobile builds bypassing API routes
+  - PWA configuration with service worker and web app manifest
+  - Gradle build optimization with reduced warnings
+- ✅ **Mobile Authentication Enhancements** - Production-ready auth features
+  - "Remember Me" functionality with 30-day sessions and email persistence
+  - Proper sign-out implementation using Supabase best practices
+  - Enhanced unlock all steps functionality for demo and authenticated users
+
 ### 📋 Future Enhancement Opportunities (Post-MVP)
 1. **Multi-device Sync** - Real-time progress synchronization across devices
 2. **Advanced Regional Features** - Seasonal buying tips, local market data integration
@@ -146,10 +163,15 @@ BuyRight/
 - `/src/contexts/JourneyContext.tsx` - Journey progress and step management with Supabase sync
 - `/src/lib/supabase.ts` - Supabase client configuration and database service layer
 - `/src/lib/supabase-server.ts` - Server-side Supabase client for SSR/API routes
+- `/src/lib/calculator-service.ts` - Direct Supabase calculator operations for mobile builds
 - `/src/middleware.ts` - Next.js middleware for auth protection and route management
-- `/src/app/(auth)/login/page.tsx` - User login page with Supabase authentication
+- `/src/app/(auth)/login/page.tsx` - User login page with Supabase authentication and Remember Me
 - `/src/app/(auth)/register/page.tsx` - User registration page with email validation
+- `/src/app/privacy/page.tsx` - Google Play Console compliant privacy policy
+- `/src/app/delete-account/page.tsx` - Account deletion flow with confirmation
+- `/src/app/api/user/delete/route.ts` - Secure account deletion API endpoint
 - `supabase-schema.sql` - Database schema for user profiles and journey tracking
+- `capacitor.config.ts` - Mobile app configuration with Android emulator support
 - `/src/types/regional.ts` - Type definitions for regional data structures
 - `/src/types/profile.ts` - User profile and dashboard insight types
 - `/src/lib/journeyEngine.ts` - Journey template system with regional overrides and enhanced descriptions
@@ -389,8 +411,50 @@ const { steps, getStepsByPhase } = useRegionalSteps()
 - **Duolingo Consistency**: Green theme (#58CC02) with proper color variants
 - **Responsive Patterns**: Consistent spacing, typography, and interaction design
 
+## Data Storage Architecture
+
+BuyRight uses a **dual-persistence strategy** for robust data management:
+
+### Primary Storage: **Supabase PostgreSQL Database**
+
+**Database Tables:**
+- `user_profiles` - User profile info (location, budget, timeline preferences)
+- `journey_progress` - Home buying journey step completion and progress
+- `calculator_sessions` - Saved calculator results and input data
+- `home_details` - Post-purchase home information 
+- `home_components` - Home maintenance component tracking
+
+**Security Features:**
+- Row Level Security (RLS) policies ensure users only access their own data
+- User authentication handled by Supabase Auth
+- Automatic profile creation on user signup
+
+### Backup Storage: **localStorage (Browser)**
+
+**Used for:**
+- Offline functionality when Supabase unavailable
+- Unauthenticated user demo mode
+- Recent calculator sessions backup
+- Journey progress persistence during network issues
+
+### Data Flow Architecture:
+
+```
+User Action → Supabase (Primary) → localStorage (Backup)
+               ↓                    ↓
+            Real-time sync     Offline fallback
+```
+
+**File Locations:**
+- **AuthContext**: `src/contexts/AuthContext.tsx:75` - Manages user profiles in Supabase
+- **JourneyContext**: `src/contexts/JourneyContext.tsx:355` - Syncs journey progress to database
+- **CalculatorService**: `src/lib/calculator-service.ts:23` - Direct Supabase calculator operations
+- **Database Schema**: `supabase-schema.sql` - Complete table structure with RLS
+
+The app uses an **offline-first approach** where all data saves to both Supabase and localStorage, ensuring users never lose their progress even during connectivity issues.
+
 ## GitHub Repository Status
-- **Latest Checkpoint**: `checkpoint-2025-08-24T12-51-13` - Android app with direct Supabase connection
+- **Latest Commit**: `e43c381 Major: Add comprehensive Google Play-compliant privacy policy and account deletion`
 - **Repository**: https://github.com/mikermcconnell/BuyRight.git
 - **Development Server**: http://localhost:3005
 

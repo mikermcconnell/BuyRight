@@ -8,10 +8,7 @@ import { logger } from '@/lib/logger';
 import { withPageErrorBoundary } from '@/components/ui/PageErrorBoundary';
 import { 
   UserIcon, 
-  CogIcon, 
   ShieldCheckIcon, 
-  DocumentTextIcon,
-  CameraIcon,
   CheckCircleIcon,
   ExclamationTriangleIcon
 } from '@heroicons/react/24/outline';
@@ -38,10 +35,6 @@ function ProfilePage() {
         first_name: user.email?.split('@')[0] || '',
         email: user.email,
         location: profile.location || 'ON',
-        timeline_preference: profile.timeline_preference,
-        home_type_preference: profile.home_type_preference || undefined,
-        first_time_buyer: profile.first_time_buyer,
-        budget_max: profile.budget_max || undefined,
         created_at: profile.created_at,
         updated_at: profile.updated_at,
       };
@@ -51,31 +44,26 @@ function ProfilePage() {
   }, [user, profile]);
 
   const calculateCompleteness = (profileData: EnhancedUserProfile) => {
-    const requiredFields = ['first_name', 'location', 'timeline_preference'];
-    const importantFields = ['phone', 'budget_max', 'annual_income', 'employment_status', 'home_type_preference'];
-    const optionalFields = ['last_name', 'bio', 'preferred_bedrooms', 'real_estate_agent_name'];
+    const requiredFields = ['first_name'];
+    const importantFields = ['last_name'];
     
     let score = 0;
     const missing: string[] = [];
     const suggestions: string[] = [];
 
-    // Required fields (20 points each)
-    requiredFields.forEach(field => {
-      if (profileData[field as keyof EnhancedUserProfile]) {
-        score += 20;
-      } else {
-        missing.push(field);
-      }
-    });
+    // Required fields (50 points)
+    if (profileData.first_name) {
+      score += 50;
+    } else {
+      missing.push('first_name');
+    }
 
-    // Important fields (10 points each)
-    importantFields.forEach(field => {
-      if (profileData[field as keyof EnhancedUserProfile]) {
-        score += 10;
-      } else {
-        suggestions.push(field);
-      }
-    });
+    // Important fields (50 points)
+    if (profileData.last_name) {
+      score += 50;
+    } else {
+      suggestions.push('last_name');
+    }
 
     // Cap at 100%
     score = Math.min(score, 100);
@@ -106,8 +94,6 @@ function ProfilePage() {
 
   const tabs = [
     { id: 'personal', name: 'Personal Info', icon: UserIcon },
-    { id: 'preferences', name: 'Home Preferences', icon: CogIcon },
-    { id: 'financial', name: 'Financial Info', icon: DocumentTextIcon },
     { id: 'security', name: 'Security & Privacy', icon: ShieldCheckIcon },
   ];
 
@@ -251,20 +237,6 @@ function ProfilePage() {
                     loading={loading}
                   />
                 )}
-                {activeTab === 'preferences' && (
-                  <PreferencesTab 
-                    profile={enhancedProfile} 
-                    onSave={handleSaveProfile}
-                    loading={loading}
-                  />
-                )}
-                {activeTab === 'financial' && (
-                  <FinancialTab 
-                    profile={enhancedProfile} 
-                    onSave={handleSaveProfile}
-                    loading={loading}
-                  />
-                )}
                 {activeTab === 'security' && (
                   <SecurityTab 
                     user={user}
@@ -292,11 +264,6 @@ function PersonalInfoTab({ profile, onSave, loading }: {
     first_name: profile.first_name || '',
     last_name: profile.last_name || '',
     display_name: profile.display_name || '',
-    phone: profile.phone || '',
-    bio: profile.bio || '',
-    emergency_contact_name: profile.emergency_contact_name || '',
-    emergency_contact_phone: profile.emergency_contact_phone || '',
-    emergency_contact_relationship: profile.emergency_contact_relationship || '',
   });
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -309,7 +276,7 @@ function PersonalInfoTab({ profile, onSave, loading }: {
       <div>
         <h3 className="text-lg font-medium leading-6 text-gray-900">Personal Information</h3>
         <p className="mt-1 text-sm text-gray-500">
-          This information helps us personalize your home buying experience.
+          Basic information for your BuyRight profile.
         </p>
       </div>
 
@@ -321,6 +288,7 @@ function PersonalInfoTab({ profile, onSave, loading }: {
             value={formData.first_name}
             onChange={(e) => setFormData({ ...formData, first_name: e.target.value })}
             className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500"
+            required
           />
         </div>
         
@@ -343,69 +311,9 @@ function PersonalInfoTab({ profile, onSave, loading }: {
             placeholder="How you'd like to be addressed"
             className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500"
           />
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium text-gray-700">Phone Number</label>
-          <input
-            type="tel"
-            value={formData.phone}
-            onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500"
-          />
-        </div>
-
-        <div className="sm:col-span-2">
-          <label className="block text-sm font-medium text-gray-700">Bio</label>
-          <textarea
-            rows={3}
-            value={formData.bio}
-            onChange={(e) => setFormData({ ...formData, bio: e.target.value })}
-            placeholder="Tell us a bit about yourself and your home buying goals..."
-            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500"
-          />
-        </div>
-      </div>
-
-      {/* Emergency Contact */}
-      <div className="border-t border-gray-200 pt-6">
-        <h4 className="text-base font-medium text-gray-900">Emergency Contact</h4>
-        <div className="mt-4 grid grid-cols-1 gap-6 sm:grid-cols-2">
-          <div>
-            <label className="block text-sm font-medium text-gray-700">Name</label>
-            <input
-              type="text"
-              value={formData.emergency_contact_name}
-              onChange={(e) => setFormData({ ...formData, emergency_contact_name: e.target.value })}
-              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500"
-            />
-          </div>
-          
-          <div>
-            <label className="block text-sm font-medium text-gray-700">Phone</label>
-            <input
-              type="tel"
-              value={formData.emergency_contact_phone}
-              onChange={(e) => setFormData({ ...formData, emergency_contact_phone: e.target.value })}
-              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500"
-            />
-          </div>
-
-          <div className="sm:col-span-2">
-            <label className="block text-sm font-medium text-gray-700">Relationship</label>
-            <select
-              value={formData.emergency_contact_relationship}
-              onChange={(e) => setFormData({ ...formData, emergency_contact_relationship: e.target.value })}
-              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500"
-            >
-              <option value="">Select relationship</option>
-              <option value="spouse">Spouse/Partner</option>
-              <option value="parent">Parent</option>
-              <option value="sibling">Sibling</option>
-              <option value="friend">Friend</option>
-              <option value="other">Other</option>
-            </select>
-          </div>
+          <p className="mt-1 text-sm text-gray-500">
+            Optional - defaults to your first name if not provided
+          </p>
         </div>
       </div>
 
@@ -422,400 +330,6 @@ function PersonalInfoTab({ profile, onSave, loading }: {
   );
 }
 
-// Home Preferences Tab Component
-function PreferencesTab({ profile, onSave, loading }: { 
-  profile: EnhancedUserProfile; 
-  onSave: (updates: Partial<EnhancedUserProfile>) => void;
-  loading: boolean;
-}) {
-  const [formData, setFormData] = useState({
-    timeline_preference: profile.timeline_preference || 'normal',
-    home_type_preference: profile.home_type_preference || 'single_family',
-    preferred_bedrooms: profile.preferred_bedrooms || 2,
-    preferred_bathrooms: profile.preferred_bathrooms || 2,
-    max_commute_time: profile.max_commute_time || 30,
-    has_pets: profile.has_pets || false,
-    pet_restrictions: profile.pet_restrictions || '',
-    accessibility_needs: profile.accessibility_needs || '',
-    special_requirements: profile.special_requirements || '',
-  });
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    onSave(formData);
-  };
-
-  return (
-    <form onSubmit={handleSubmit} className="space-y-6">
-      <div>
-        <h3 className="text-lg font-medium leading-6 text-gray-900">Home Buying Preferences</h3>
-        <p className="mt-1 text-sm text-gray-500">
-          Help us find the perfect home by telling us your preferences.
-        </p>
-      </div>
-
-      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
-        <div>
-          <label className="block text-sm font-medium text-gray-700">Buying Timeline</label>
-          <select
-            value={formData.timeline_preference}
-            onChange={(e) => setFormData({ ...formData, timeline_preference: e.target.value as any })}
-            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500"
-          >
-            <option value="fast">Fast (0-3 months)</option>
-            <option value="normal">Normal (3-6 months)</option>
-            <option value="thorough">Thorough (6+ months)</option>
-          </select>
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium text-gray-700">Home Type</label>
-          <select
-            value={formData.home_type_preference}
-            onChange={(e) => setFormData({ ...formData, home_type_preference: e.target.value as any })}
-            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500"
-          >
-            <option value="single_family">Single Family Home</option>
-            <option value="condo">Condominium</option>
-            <option value="townhouse">Townhouse</option>
-          </select>
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium text-gray-700">Bedrooms</label>
-          <select
-            value={formData.preferred_bedrooms}
-            onChange={(e) => setFormData({ ...formData, preferred_bedrooms: parseInt(e.target.value) })}
-            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500"
-          >
-            {[1, 2, 3, 4, 5].map(num => (
-              <option key={num} value={num}>{num}+ Bedroom{num > 1 ? 's' : ''}</option>
-            ))}
-          </select>
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium text-gray-700">Bathrooms</label>
-          <select
-            value={formData.preferred_bathrooms}
-            onChange={(e) => setFormData({ ...formData, preferred_bathrooms: parseFloat(e.target.value) })}
-            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500"
-          >
-            <option value={1}>1+ Bathroom</option>
-            <option value={1.5}>1.5+ Bathrooms</option>
-            <option value={2}>2+ Bathrooms</option>
-            <option value={2.5}>2.5+ Bathrooms</option>
-            <option value={3}>3+ Bathrooms</option>
-          </select>
-        </div>
-
-        <div className="sm:col-span-2">
-          <label className="block text-sm font-medium text-gray-700">
-            Maximum Commute Time (minutes)
-          </label>
-          <input
-            type="number"
-            value={formData.max_commute_time}
-            onChange={(e) => setFormData({ ...formData, max_commute_time: parseInt(e.target.value) })}
-            min="5"
-            max="120"
-            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500"
-          />
-        </div>
-
-        <div className="sm:col-span-2">
-          <div className="flex items-center">
-            <input
-              type="checkbox"
-              checked={formData.has_pets}
-              onChange={(e) => setFormData({ ...formData, has_pets: e.target.checked })}
-              className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
-            />
-            <label className="ml-2 block text-sm text-gray-900">
-              I have pets
-            </label>
-          </div>
-          {formData.has_pets && (
-            <textarea
-              rows={2}
-              value={formData.pet_restrictions}
-              onChange={(e) => setFormData({ ...formData, pet_restrictions: e.target.value })}
-              placeholder="Describe your pets and any specific requirements..."
-              className="mt-2 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500"
-            />
-          )}
-        </div>
-
-        <div className="sm:col-span-2">
-          <label className="block text-sm font-medium text-gray-700">
-            Accessibility Needs
-          </label>
-          <textarea
-            rows={2}
-            value={formData.accessibility_needs}
-            onChange={(e) => setFormData({ ...formData, accessibility_needs: e.target.value })}
-            placeholder="Any accessibility requirements or modifications needed..."
-            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500"
-          />
-        </div>
-
-        <div className="sm:col-span-2">
-          <label className="block text-sm font-medium text-gray-700">
-            Special Requirements
-          </label>
-          <textarea
-            rows={3}
-            value={formData.special_requirements}
-            onChange={(e) => setFormData({ ...formData, special_requirements: e.target.value })}
-            placeholder="Any other specific requirements or preferences..."
-            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500"
-          />
-        </div>
-      </div>
-
-      <div className="flex justify-end">
-        <button
-          type="submit"
-          disabled={loading}
-          className="rounded-md bg-primary-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 disabled:opacity-50"
-        >
-          {loading ? 'Saving...' : 'Save Preferences'}
-        </button>
-      </div>
-    </form>
-  );
-}
-
-// Financial Information Tab Component
-function FinancialTab({ profile, onSave, loading }: { 
-  profile: EnhancedUserProfile; 
-  onSave: (updates: Partial<EnhancedUserProfile>) => void;
-  loading: boolean;
-}) {
-  const [formData, setFormData] = useState({
-    employment_status: profile.employment_status || 'employed',
-    annual_income: profile.annual_income || 0,
-    credit_score_range: profile.credit_score_range || 'good',
-    budget_max: profile.budget_max || 0,
-    current_living_situation: profile.current_living_situation || 'renting',
-    current_rent_amount: profile.current_rent_amount || 0,
-    down_payment_saved: profile.down_payment_saved || 0,
-    down_payment_percentage: profile.down_payment_percentage || 10,
-    mortgage_pre_approved: profile.mortgage_pre_approved || false,
-    pre_approval_amount: profile.pre_approval_amount || 0,
-    pre_approval_expiry: profile.pre_approval_expiry || '',
-    lender_name: profile.lender_name || '',
-  });
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    onSave(formData);
-  };
-
-  return (
-    <form onSubmit={handleSubmit} className="space-y-6">
-      <div>
-        <h3 className="text-lg font-medium leading-6 text-gray-900">Financial Information</h3>
-        <p className="mt-1 text-sm text-gray-500">
-          This information helps us provide accurate affordability estimates. All information is kept confidential.
-        </p>
-      </div>
-
-      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
-        <div>
-          <label className="block text-sm font-medium text-gray-700">Employment Status</label>
-          <select
-            value={formData.employment_status}
-            onChange={(e) => setFormData({ ...formData, employment_status: e.target.value as any })}
-            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500"
-          >
-            <option value="employed">Employed</option>
-            <option value="self_employed">Self-Employed</option>
-            <option value="unemployed">Unemployed</option>
-            <option value="retired">Retired</option>
-            <option value="student">Student</option>
-          </select>
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium text-gray-700">Annual Income</label>
-          <div className="mt-1 relative rounded-md shadow-sm">
-            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-              <span className="text-gray-500 sm:text-sm">$</span>
-            </div>
-            <input
-              type="number"
-              value={formData.annual_income}
-              onChange={(e) => setFormData({ ...formData, annual_income: parseFloat(e.target.value) || 0 })}
-              className="focus:ring-primary-500 focus:border-primary-500 block w-full pl-7 pr-12 sm:text-sm border-gray-300 rounded-md"
-              placeholder="75,000"
-            />
-          </div>
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium text-gray-700">Credit Score Range</label>
-          <select
-            value={formData.credit_score_range}
-            onChange={(e) => setFormData({ ...formData, credit_score_range: e.target.value as any })}
-            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500"
-          >
-            <option value="poor">Poor (300-579)</option>
-            <option value="fair">Fair (580-669)</option>
-            <option value="good">Good (670-739)</option>
-            <option value="very_good">Very Good (740-799)</option>
-            <option value="excellent">Excellent (800+)</option>
-          </select>
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium text-gray-700">Maximum Budget</label>
-          <div className="mt-1 relative rounded-md shadow-sm">
-            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-              <span className="text-gray-500 sm:text-sm">$</span>
-            </div>
-            <input
-              type="number"
-              value={formData.budget_max}
-              onChange={(e) => setFormData({ ...formData, budget_max: parseFloat(e.target.value) || 0 })}
-              className="focus:ring-primary-500 focus:border-primary-500 block w-full pl-7 pr-12 sm:text-sm border-gray-300 rounded-md"
-              placeholder="500,000"
-            />
-          </div>
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium text-gray-700">Current Living Situation</label>
-          <select
-            value={formData.current_living_situation}
-            onChange={(e) => setFormData({ ...formData, current_living_situation: e.target.value as any })}
-            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500"
-          >
-            <option value="renting">Renting</option>
-            <option value="living_with_family">Living with Family</option>
-            <option value="owned">Currently Own</option>
-            <option value="other">Other</option>
-          </select>
-        </div>
-
-        {formData.current_living_situation === 'renting' && (
-          <div>
-            <label className="block text-sm font-medium text-gray-700">Current Rent Amount</label>
-            <div className="mt-1 relative rounded-md shadow-sm">
-              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <span className="text-gray-500 sm:text-sm">$</span>
-              </div>
-              <input
-                type="number"
-                value={formData.current_rent_amount}
-                onChange={(e) => setFormData({ ...formData, current_rent_amount: parseFloat(e.target.value) || 0 })}
-                className="focus:ring-primary-500 focus:border-primary-500 block w-full pl-7 pr-12 sm:text-sm border-gray-300 rounded-md"
-                placeholder="2,000"
-              />
-            </div>
-          </div>
-        )}
-
-        <div>
-          <label className="block text-sm font-medium text-gray-700">Down Payment Saved</label>
-          <div className="mt-1 relative rounded-md shadow-sm">
-            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-              <span className="text-gray-500 sm:text-sm">$</span>
-            </div>
-            <input
-              type="number"
-              value={formData.down_payment_saved}
-              onChange={(e) => setFormData({ ...formData, down_payment_saved: parseFloat(e.target.value) || 0 })}
-              className="focus:ring-primary-500 focus:border-primary-500 block w-full pl-7 pr-12 sm:text-sm border-gray-300 rounded-md"
-              placeholder="50,000"
-            />
-          </div>
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium text-gray-700">Down Payment Percentage</label>
-          <select
-            value={formData.down_payment_percentage}
-            onChange={(e) => setFormData({ ...formData, down_payment_percentage: parseInt(e.target.value) })}
-            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500"
-          >
-            <option value={5}>5%</option>
-            <option value={10}>10%</option>
-            <option value={15}>15%</option>
-            <option value={20}>20%</option>
-            <option value={25}>25%</option>
-          </select>
-        </div>
-      </div>
-
-      {/* Mortgage Pre-approval Section */}
-      <div className="border-t border-gray-200 pt-6">
-        <div className="flex items-center mb-4">
-          <input
-            type="checkbox"
-            checked={formData.mortgage_pre_approved}
-            onChange={(e) => setFormData({ ...formData, mortgage_pre_approved: e.target.checked })}
-            className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
-          />
-          <label className="ml-2 block text-sm font-medium text-gray-900">
-            I have mortgage pre-approval
-          </label>
-        </div>
-
-        {formData.mortgage_pre_approved && (
-          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
-            <div>
-              <label className="block text-sm font-medium text-gray-700">Pre-approval Amount</label>
-              <div className="mt-1 relative rounded-md shadow-sm">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <span className="text-gray-500 sm:text-sm">$</span>
-                </div>
-                <input
-                  type="number"
-                  value={formData.pre_approval_amount}
-                  onChange={(e) => setFormData({ ...formData, pre_approval_amount: parseFloat(e.target.value) || 0 })}
-                  className="focus:ring-primary-500 focus:border-primary-500 block w-full pl-7 pr-12 sm:text-sm border-gray-300 rounded-md"
-                  placeholder="500,000"
-                />
-              </div>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700">Expiry Date</label>
-              <input
-                type="date"
-                value={formData.pre_approval_expiry}
-                onChange={(e) => setFormData({ ...formData, pre_approval_expiry: e.target.value })}
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500"
-              />
-            </div>
-
-            <div className="sm:col-span-2">
-              <label className="block text-sm font-medium text-gray-700">Lender Name</label>
-              <input
-                type="text"
-                value={formData.lender_name}
-                onChange={(e) => setFormData({ ...formData, lender_name: e.target.value })}
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500"
-                placeholder="e.g., TD Bank, RBC, etc."
-              />
-            </div>
-          </div>
-        )}
-      </div>
-
-      <div className="flex justify-end">
-        <button
-          type="submit"
-          disabled={loading}
-          className="rounded-md bg-primary-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 disabled:opacity-50"
-        >
-          {loading ? 'Saving...' : 'Save Financial Info'}
-        </button>
-      </div>
-    </form>
-  );
-}
 
 // Security & Privacy Tab Component
 function SecurityTab({ user, profile, onSave, loading }: { 
@@ -924,16 +438,29 @@ function SecurityTab({ user, profile, onSave, loading }: {
         </div>
       </form>
 
+      {/* Privacy & Legal */}
+      <div className="border-t border-gray-200 pt-6">
+        <h4 className="text-base font-medium text-gray-900">Privacy & Legal</h4>
+        <div className="mt-4 space-y-3">
+          <button 
+            onClick={() => window.location.href = '/privacy'}
+            className="text-sm text-primary-600 hover:text-primary-500"
+          >
+            Privacy Policy
+          </button>
+          <br />
+          <button className="text-sm text-primary-600 hover:text-primary-500">
+            Download My Data
+          </button>
+        </div>
+      </div>
+
       {/* Account Actions */}
       <div className="border-t border-gray-200 pt-6">
         <h4 className="text-base font-medium text-gray-900">Account Actions</h4>
         <div className="mt-4 space-y-3">
           <button className="text-sm text-primary-600 hover:text-primary-500">
             Change Password
-          </button>
-          <br />
-          <button className="text-sm text-primary-600 hover:text-primary-500">
-            Download My Data
           </button>
           <br />
           <button 

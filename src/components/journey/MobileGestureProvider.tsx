@@ -47,7 +47,7 @@ const defaultConfig: GestureConfig = {
   enablePinchToZoom: false,
   enableDoubleTapToComplete: true,
   enableLongPressActions: true,
-  hapticFeedback: true,
+  hapticFeedback: false, // Disabled to prevent unwanted vibrations
   swipeThreshold: 50,
   longPressThreshold: 800,
 };
@@ -137,15 +137,15 @@ export function MobileGestureProvider({ children, initialConfig }: MobileGesture
         break;
       }
       case 'up': {
-        // Scroll to top or show step overview
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-        triggerHaptic(20);
+        // Auto-scroll disabled to prevent unwanted scrolling
+        // window.scrollTo({ top: 0, behavior: 'smooth' });
+        // triggerHaptic(20);
         break;
       }
       case 'down': {
-        // Scroll to bottom or show step actions
-        window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
-        triggerHaptic(20);
+        // Auto-scroll disabled to prevent unwanted scrolling
+        // window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+        // triggerHaptic(20);
         break;
       }
     }

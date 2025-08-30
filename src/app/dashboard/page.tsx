@@ -181,7 +181,7 @@ function Dashboard() {
   };
 
   return (
-    <MobileGestureProvider initialConfig={{ hapticFeedback: isMobileView }}>
+    <MobileGestureProvider initialConfig={{ hapticFeedback: false }}>
       <div className="min-h-screen bg-gray-50">
         {/* Header with User Menu */}
         <Header 
@@ -418,6 +418,9 @@ function Dashboard() {
                       completed: isStepCompleted(step.id)
                     }));
                     journeyLogger.info('Steps unlocked - verification', { stepStatus });
+                    
+                    // Automatically refresh the page after unlocking steps
+                    window.location.reload();
                   }, 200);
                 }}
                 className="px-4 py-2 text-sm bg-green-100 hover:bg-green-200 text-green-700 rounded-lg font-medium transition-all duration-200 flex items-center space-x-2"

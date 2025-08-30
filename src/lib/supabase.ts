@@ -1,5 +1,6 @@
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import { createBrowserClient } from '@supabase/ssr';
+import { journeyLogger } from '@/lib/logger';
 
 // Environment variables with fallback for deployment
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://placeholder.supabase.co';
@@ -374,7 +375,7 @@ export class SupabaseService {
       .single();
 
     if (error) {
-      console.error('Error updating journey step:', error);
+      journeyLogger.error('Error updating journey step', error);
       throw error;
     }
 

@@ -24,25 +24,94 @@ class Logger {
   private level: LogLevel;
   private enableConsole: boolean;
   private logs: LogEntry[] = [];
-  private maxLogs = 1000; // Keep last 1000 logs in memory
+  private maxLogs = 50; // Reduced from 1000 for ephemeral compliance
+  private sensitiveDataCleanupInterval: NodeJS.Timeout | null = null;
 
   constructor() {
     // Set log level based on environment
     this.level = process.env.NODE_ENV === 'development' ? LogLevel.DEBUG : LogLevel.INFO;
     this.enableConsole = process.env.NODE_ENV === 'development';
+    
+    // Set up automatic cleanup of sensitive data every 60 seconds
+    this.sensitiveDataCleanupInterval = setInterval(() => {
+      this.clearSensitiveLogs();
+    }, 60 * 1000);
   }
 
   private shouldLog(level: LogLevel): boolean {
     return level <= this.level;
   }
 
+  private sanitizeLogEntry(entry: LogEntry): LogEntry {
+    if (!entry.context) return entry;
+    
+    const sanitized = { ...entry.context };
+    
+    // Remove sensitive fields for ephemeral compliance
+    const sensitiveFields = ['password', 'token', 'email', 'income', 'debts', 'inputs', 'results', 'calculatorData'];
+    sensitiveFields.forEach(field => {
+      if (sanitized[field] !== undefined) {
+        delete sanitized[field];
+      }
+    });
+    
+    // Sanitize nested objects
+    Object.keys(sanitized).forEach(key => {
+      if (typeof sanitized[key] === 'object' && sanitized[key] !== null) {
+        sensitiveFields.forEach(field => {
+          if (sanitized[key][field] !== undefined) {
+            delete sanitized[key][field];
+          }
+        });
+      }
+    });
+    
+    return {
+      ...entry,
+      context: Object.keys(sanitized).length > 0 ? sanitized : undefined
+    };
+  }
+
+  private clearSensitiveLogs(): void {
+    // Remove logs that may contain sensitive data after processing
+    this.logs = this.logs.filter(log => {
+      const hasSensitiveContent = log.message.toLowerCase().includes('calculation') ||
+                                  log.message.toLowerCase().includes('login') ||
+                                  log.message.toLowerCase().includes('auth') ||
+                                  log.message.toLowerCase().includes('password') ||
+                                  log.message.toLowerCase().includes('income') ||
+                                  (log.context && Object.keys(log.context).some(key => 
+                                    ['email', 'password', 'token', 'income', 'debts'].includes(key.toLowerCase())
+                                  ));
+      
+      // Keep non-sensitive logs, remove sensitive ones for ephemeral compliance
+      return !hasSensitiveContent;
+    });
+  }
+
   private addLog(entry: LogEntry): void {
-    this.logs.push(entry);
+    // Sanitize entry before storing
+    const sanitizedEntry = this.sanitizeLogEntry(entry);
+    this.logs.push(sanitizedEntry);
     
     // Trim logs if we exceed the maximum
     if (this.logs.length > this.maxLogs) {
       this.logs = this.logs.slice(-this.maxLogs);
     }
+  }
+
+  // Add cleanup method for explicit data clearing
+  public clearAllLogs(): void {
+    this.logs = [];
+  }
+
+  // Cleanup method for shutdown
+  public cleanup(): void {
+    if (this.sensitiveDataCleanupInterval) {
+      clearInterval(this.sensitiveDataCleanupInterval);
+      this.sensitiveDataCleanupInterval = null;
+    }
+    this.clearAllLogs();
   }
 
   private formatMessage(level: LogLevel, message: string, context?: Record<string, any>): string {

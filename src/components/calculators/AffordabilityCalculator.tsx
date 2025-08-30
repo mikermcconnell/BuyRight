@@ -596,8 +596,14 @@ const AffordabilityCalculator = React.memo(function AffordabilityCalculator({
   };
 
   const handleSaveCalculation = useCallback(async () => {
-    if (!result) return;
+    console.log('Save button clicked - starting save process');
+    if (!result) {
+      console.log('No result to save');
+      return;
+    }
 
+    console.log('Saving calculation and navigating to dashboard...');
+    
     try {
       // Use direct Supabase service instead of API route
       const saveResult = await CalculatorService.saveCalculation({
@@ -616,15 +622,20 @@ const AffordabilityCalculator = React.memo(function AffordabilityCalculator({
 
       if (saveResult.success) {
         calculatorLogger.info('Calculation saved successfully', { sessionId: saveResult.sessionId });
+        console.log('Calculation saved successfully, navigating to dashboard');
       } else {
         calculatorLogger.error('Failed to save calculation', new Error(saveResult.error || 'Unknown error'));
+        console.log('Save failed, but still navigating to dashboard');
       }
 
       // Navigate to dashboard after saving
+      console.log('Calling router.push to dashboard');
       router.push('/dashboard');
     } catch (error) {
+      console.log('Error saving calculation, still navigating to dashboard', error);
       calculatorLogger.error('Error saving calculation', error instanceof Error ? error : new Error(String(error)));
       // Navigate to dashboard even if save fails
+      console.log('Calling router.push to dashboard after error');
       router.push('/dashboard');
     }
   }, [result, annualIncome, monthlyDebts, downPaymentAmount, interestRate, loanTerm, router]);
@@ -1163,9 +1174,10 @@ const AffordabilityCalculator = React.memo(function AffordabilityCalculator({
             {showSaveOption && (
               <button
                 onClick={handleSaveCalculation}
-                className="duolingo-button"
+                className="duolingo-button w-full"
+                type="button"
               >
-                💾 Save This Calculation
+                💾 Save & Return to Dashboard
               </button>
             )}
           </div>

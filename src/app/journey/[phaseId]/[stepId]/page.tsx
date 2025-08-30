@@ -133,6 +133,7 @@ export default function StepDetailPage() {
   const stepId = params.stepId as string;
   
   const {
+    engine,
     phases,
     loading,
     error,
@@ -236,9 +237,9 @@ export default function StepDetailPage() {
     await complete(notes || undefined);
     
     // Navigate to next step or back to dashboard
-    const nextStep = getNextStep();
-    if (nextStep) {
-      router.push(`/journey/${phaseId}/${nextStep.id}`);
+    const nextStepAfterComplete = currentStep ? engine?.getNextStep(currentStep.id) || null : null;
+    if (nextStepAfterComplete) {
+      router.push(`/journey/${nextStepAfterComplete.phaseId}/${nextStepAfterComplete.id}`);
     } else {
       router.push('/dashboard');
     }
@@ -268,8 +269,21 @@ export default function StepDetailPage() {
   // Overall step readiness
   const stepReadyForCompletion = checklistProgress >= 100 && (!hasRequiredCalculators || calculatorsComplete);
 
-  const nextStep = getNextStep();
-  const previousStep = getPreviousStep();
+  // Get next/previous steps based on the currently viewed step, not user progress
+  const nextStep = currentStep ? engine?.getNextStep(currentStep.id) || null : null;
+  const previousStep = currentStep ? engine?.getPreviousStep(currentStep.id) || null : null;
+  
+  // Debug navigation info
+  if (currentStep && process.env.NODE_ENV === 'development') {
+    console.log('Navigation Debug:', {
+      currentStepId: currentStep.id,
+      currentStepTitle: currentStep.title,
+      previousStepId: previousStep?.id,
+      previousStepTitle: previousStep?.title,
+      nextStepId: nextStep?.id,
+      nextStepTitle: nextStep?.title
+    });
+  }
 
   // Check if next step is in a different phase
   const getNextPhaseInfo = () => {
@@ -300,7 +314,7 @@ export default function StepDetailPage() {
   const nextPhaseInfo = getNextPhaseInfo();
 
   return (
-    <MobileGestureProvider initialConfig={{ hapticFeedback: isMobileView }}>
+    <MobileGestureProvider initialConfig={{ hapticFeedback: false }}>
       <div className="duolingo-container min-h-screen py-8">
         <div className="w-full max-w-4xl">
         {/* Breadcrumb Navigation */}
@@ -634,33 +648,73 @@ export default function StepDetailPage() {
         </div>
 
         {/* Navigation */}
-        <div className="flex justify-between mt-8">
+        <div className="flex justify-between items-center mt-8 gap-4">
+          {previousStep ? (
+            <div className="flex flex-col items-start">
+              <button
+                onClick={() => {
+                  console.log('Navigating to previous step:', {
+                    from: currentStep?.id,
+                    to: previousStep.id,
+                    toPhase: previousStep.phaseId
+                  });
+                  router.push(`/journey/${previousStep.phaseId}/${previousStep.id}`);
+                }}
+                className="px-6 py-3 bg-gray-200 hover:bg-gray-300 text-gray-800 rounded-lg font-semibold transition-all duration-200"
+              >
+                ← Previous Step
+              </button>
+              <p className="text-xs text-gray-500 mt-1">
+                Previous: {previousStep.title}
+              </p>
+            </div>
+          ) : (
+            <button
+              onClick={() => {
+                console.log('No previous step, going to dashboard');
+                router.push('/dashboard');
+              }}
+              className="px-6 py-3 bg-gray-200 hover:bg-gray-300 text-gray-800 rounded-lg font-semibold transition-all duration-200"
+            >
+              ← First Step
+            </button>
+          )}
+          
           <button
             onClick={() => {
-              if (previousStep) {
-                router.push(`/journey/${phaseId}/${previousStep.id}`);
-              } else {
-                router.push('/dashboard');
-              }
+              console.log('Navigating to dashboard');
+              router.push('/dashboard');
             }}
-            className="px-6 py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg font-medium transition-all duration-200"
+            className="px-6 py-3 bg-blue-100 hover:bg-blue-200 text-blue-700 rounded-lg font-medium transition-all duration-200"
           >
-            ← {previousStep ? 'Previous Step' : 'Back to Dashboard'}
+            🏠 Dashboard
           </button>
           
           {nextStep ? (
-            <button
-              onClick={() => router.push(`/journey/${phaseId}/${nextStep.id}`)}
-              className="px-6 py-3 bg-green-100 hover:bg-green-200 text-green-700 rounded-lg font-medium transition-all duration-200"
-            >
-              Next Step →
-            </button>
+            <div className="flex flex-col items-end">
+              <button
+                onClick={() => {
+                  console.log('Navigating to next step:', {
+                    from: currentStep?.id,
+                    to: nextStep.id,
+                    toPhase: nextStep.phaseId
+                  });
+                  router.push(`/journey/${nextStep.phaseId}/${nextStep.id}`);
+                }}
+                className="px-6 py-3 bg-green-500 hover:bg-green-600 text-white rounded-lg font-semibold transition-all duration-200"
+              >
+                Next Step →
+              </button>
+              <p className="text-xs text-gray-500 mt-1 text-right">
+                Next: {nextStep.title}
+              </p>
+            </div>
           ) : (
             <button
               onClick={() => router.push('/dashboard')}
-              className="px-6 py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg font-medium transition-all duration-200"
+              className="px-6 py-3 bg-green-500 hover:bg-green-600 text-white rounded-lg font-semibold transition-all duration-200"
             >
-              Back to Dashboard →
+              Complete Journey →
             </button>
           )}
         </div>

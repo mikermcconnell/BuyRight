@@ -5,6 +5,7 @@ import { JourneyApi } from './progressApi';
 const STORAGE_KEY = 'buyright_journey_progress';
 const SYNC_KEY = 'buyright_last_sync';
 const OFFLINE_QUEUE_KEY = 'buyright_offline_queue';
+const DATA_EXPIRY_HOURS = 24; // Expire ephemeral data after 24 hours
 
 interface OfflineAction {
   id: string;
@@ -14,9 +15,32 @@ interface OfflineAction {
 }
 
 export class ProgressPersistence {
+  // Clean up expired data for ephemeral compliance
+  private static cleanupExpiredData(): void {
+    try {
+      const stored = localStorage.getItem(STORAGE_KEY);
+      if (stored) {
+        const progress = JSON.parse(stored);
+        const lastUpdated = new Date(progress.lastUpdated);
+        const ageHours = (Date.now() - lastUpdated.getTime()) / (1000 * 60 * 60);
+        
+        if (ageHours > DATA_EXPIRY_HOURS) {
+          localStorage.removeItem(STORAGE_KEY);
+          localStorage.removeItem(SYNC_KEY);
+          localStorage.removeItem(OFFLINE_QUEUE_KEY);
+        }
+      }
+    } catch (error) {
+      console.error('Failed to cleanup expired progress data:', error);
+    }
+  }
+
   // Save progress with API + localStorage fallback
   static async saveProgress(progress: UserJourneyProgress): Promise<boolean> {
     try {
+      // Cleanup expired data first
+      this.cleanupExpiredData();
+      
       // Always save to localStorage first for immediate access
       this.saveToLocalStorage(progress);
 
@@ -62,6 +86,9 @@ export class ProgressPersistence {
   // Load progress with API + localStorage fallback
   static async loadProgress(userId: string): Promise<UserJourneyProgress | null> {
     try {
+      // Cleanup expired data first
+      this.cleanupExpiredData();
+      
       // First try to load from API if online
       if (navigator.onLine) {
         const result = await JourneyApi.progress.getProgress(userId);
@@ -73,7 +100,7 @@ export class ProgressPersistence {
         }
       }
 
-      // Fallback to localStorage
+      // Fallback to localStorage (after cleanup)
       return this.loadFromLocalStorage();
     } catch (error) {
       console.error('Error loading progress:', error);
@@ -314,10 +341,12 @@ if (typeof window !== 'undefined') {
     ProgressPersistence.syncOfflineChanges();
   });
 
-  // Periodic sync check
+  // Periodic sync check with ephemeral data cleanup
   setInterval(() => {
     if (navigator.onLine && ProgressPersistence.needsSync()) {
       ProgressPersistence.syncOfflineChanges();
     }
+    // Cleanup expired data every sync check for ephemeral compliance
+    ProgressPersistence['cleanupExpiredData']();
   }, 60000); // Check every minute
 }

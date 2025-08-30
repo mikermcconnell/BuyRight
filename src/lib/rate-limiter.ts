@@ -24,10 +24,10 @@ class InMemoryRateLimitStore {
   private cleanupInterval: NodeJS.Timeout;
 
   constructor() {
-    // Clean up expired entries every 5 minutes
+    // Clean up expired entries every 2 minutes for ephemeral compliance
     this.cleanupInterval = setInterval(() => {
       this.cleanup();
-    }, 5 * 60 * 1000);
+    }, 2 * 60 * 1000);
   }
 
   private cleanup() {
@@ -35,9 +35,9 @@ class InMemoryRateLimitStore {
     const expiredKeys: string[] = [];
 
     for (const [key, entry] of Array.from(this.store.entries())) {
-      // Remove entries with no recent requests (older than 1 hour)
+      // Remove entries with no recent requests (older than 15 minutes for ephemeral compliance)
       const hasRecentRequests = entry.requests.some(
-        (req: { timestamp: number; success: boolean }) => now - req.timestamp < 60 * 60 * 1000
+        (req: { timestamp: number; success: boolean }) => now - req.timestamp < 15 * 60 * 1000
       );
 
       if (!hasRecentRequests && (!entry.blockedUntil || now > entry.blockedUntil)) {
@@ -46,6 +46,11 @@ class InMemoryRateLimitStore {
     }
 
     expiredKeys.forEach(key => this.store.delete(key));
+    
+    // Also clean up old request entries from remaining entries
+    for (const [key, entry] of Array.from(this.store.entries())) {
+      entry.requests = entry.requests.filter(req => now - req.timestamp < 15 * 60 * 1000);
+    }
   }
 
   get(key: string): RateLimitEntry | undefined {
@@ -184,20 +189,21 @@ export const generalApiRateLimiter = new RateLimiter({
   message: 'API rate limit exceeded. Please slow down.',
 });
 
-// Utility function to get client identifier from request
+// Utility function to get client identifier from request (ephemeral processing)
 export function getClientIdentifier(request: Request): string {
-  // Try to get IP address from various headers
+  // Try to get IP address from various headers (processed ephemerally)
   const forwarded = request.headers.get('x-forwarded-for');
   const realIp = request.headers.get('x-real-ip');
   const cfConnectingIp = request.headers.get('cf-connecting-ip');
   
   let ip = forwarded?.split(',')[0]?.trim() || realIp || cfConnectingIp || 'unknown';
   
-  // Fallback to user-agent for additional uniqueness
+  // Create ephemeral identifier using hash for privacy
   const userAgent = request.headers.get('user-agent') || 'unknown';
-  const userAgentHash = Buffer.from(userAgent).toString('base64').slice(0, 8);
+  const timestamp = Math.floor(Date.now() / (15 * 60 * 1000)); // 15-minute buckets
+  const ephemeralId = Buffer.from(`${ip}_${userAgent}_${timestamp}`).toString('base64').slice(0, 12);
   
-  return `${ip}_${userAgentHash}`;
+  return ephemeralId;
 }
 
 // Utility function to get user-specific identifier

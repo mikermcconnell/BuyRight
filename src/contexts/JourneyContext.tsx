@@ -353,7 +353,7 @@ export function JourneyProvider({ children }: JourneyProviderProps) {
         journeyLogger.info('Initializing guest journey', { regionCode });
         
         // Check if there's existing guest progress in localStorage
-        const existingProgress = await ProgressPersistence.loadProgress();
+        const existingProgress = await ProgressPersistence.loadProgress('demo-user');
         
         if (existingProgress && existingProgress.userId === 'demo-user') {
           // Use existing guest progress

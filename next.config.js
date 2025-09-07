@@ -10,10 +10,6 @@ const nextConfig = {
     images: {
       unoptimized: true,
     },
-    // Skip API routes for static export
-    experimental: {
-      appDir: true,
-    },
   }),
   
   // TypeScript configuration - strict in development, flexible in deployment
@@ -26,22 +22,9 @@ const nextConfig = {
     ignoreDuringBuilds: process.env.NODE_ENV === 'production' && process.env.VERCEL_ENV === 'production',
   },
   
-  // External packages for server components
-  serverExternalPackages: ['@supabase/auth-helpers-nextjs'],
-  
   experimental: {
     // Enable faster builds and hot reload
     optimizePackageImports: ['@heroicons/react'],
-  },
-  
-  // Turbopack configuration
-  turbopack: {
-    rules: {
-      '*.svg': {
-        loaders: ['@svgr/webpack'],
-        as: '*.js',
-      },
-    },
   },
   // PWA Configuration
   async headers() {

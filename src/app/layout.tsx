@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from 'next';
 import { Inter } from 'next/font/google';
 import Script from 'next/script';
+import { Suspense } from 'react';
 import './globals.css';
 import { RegionalProvider } from '@/contexts/RegionalContext';
 import { JourneyProvider } from '@/contexts/JourneyContext';
@@ -70,17 +71,28 @@ export default function RootLayout({
     <html lang="en" className={inter.variable}>
       <body className={`${inter.className} bg-gray-50 text-gray-900 antialiased`}>
         <ErrorBoundary>
-          <AuthProvider>
-            <RegionalProvider>
-              <JourneyProvider>
-                <ComplexityProvider>
-                  <div className="min-h-screen">
-                    {children}
-                  </div>
-                </ComplexityProvider>
-              </JourneyProvider>
-            </RegionalProvider>
-          </AuthProvider>
+          <Suspense fallback={
+            <div className="min-h-screen flex items-center justify-center">
+              <div className="text-center">
+                <div className="w-16 h-16 bg-green-500 rounded-xl flex items-center justify-center mx-auto mb-4 animate-pulse">
+                  <span className="text-white font-bold text-2xl">🏠</span>
+                </div>
+                <p className="text-gray-600">Loading BuyRight...</p>
+              </div>
+            </div>
+          }>
+            <AuthProvider>
+              <RegionalProvider>
+                <JourneyProvider>
+                  <ComplexityProvider>
+                    <div className="min-h-screen">
+                      {children}
+                    </div>
+                  </ComplexityProvider>
+                </JourneyProvider>
+              </RegionalProvider>
+            </AuthProvider>
+          </Suspense>
         </ErrorBoundary>
         
         {/* Service Worker Registration for PWA - Production Only */}

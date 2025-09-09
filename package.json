@@ -4,9 +4,9 @@
   "description": "Mobile-first home buying guide with regional customization",
   "private": true,
   "scripts": {
-    "dev": "next dev --turbo --port 3010",
-    "dev:fast": "next dev --turbo --port 3010",
-    "dev:clean": "rm -rf .next && next dev --turbo --port 3010",
+    "dev": "next dev --turbo --port 3005",
+    "dev:fast": "next dev --turbo --port 3005",
+    "dev:clean": "rm -rf .next && next dev --turbo --port 3005",
     "build": "next build",
     "build:mobile": "set BUILD_TARGET=mobile&& next build",
     "build:android": "node scripts/build-mobile.js",

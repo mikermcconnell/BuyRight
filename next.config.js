@@ -35,14 +35,15 @@ const nextConfig = {
   },
   
   // Turbopack configuration
-  turbopack: {
-    rules: {
-      '*.svg': {
-        loaders: ['@svgr/webpack'],
-        as: '*.js',
-      },
-    },
-  },
+  // Note: SVG loader configuration removed as it's incompatible with current Turbopack version
+  // turbopack: {
+  //   rules: {
+  //     '*.svg': {
+  //       loaders: ['@svgr/webpack'],
+  //       as: '*.js',
+  //     },
+  //   },
+  // },
   // PWA Configuration
   async headers() {
     return [
